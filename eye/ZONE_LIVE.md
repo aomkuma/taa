@@ -112,8 +112,9 @@ history of those rules is `git log -- eye/ZONE_LIVE.md` before this rewrite.
 ## L2. Bars and quotes in real time [Claude]
 
 - At start: the stored bars **of the pinned server** (`data/history/<server>/XAUUSD`, the history store is organized
-  by trade server; the simulation's runs read `FBS-Demo`) are loaded - none for that server refuses the start (the
-  owner fetches that server's history first), and each
+  by trade server; the simulation's runs read `FBS-Demo`) are loaded - none for that server, or an H1 series that does not reach back to `epoch` (L9) with the D1
+  history the step needs before it (ZONE_RULES 2), refuses the start (the owner fetches that server's history
+  first), and each
   frame (D1, H4, H1, M15 - always, the state gate reads it - and M5 when it is `exec_tf`) is brought up to date with
   the broker's **closed** bars through the read-only gateway, merged by bar open time (a stored bar is never replaced). **The broker's bars must reach back to the
   stored files' last bar** and agree with the stored bars they overlap (open time; open, high, low, close within one
@@ -131,7 +132,8 @@ history of those rules is `git log -- eye/ZONE_LIVE.md` before this rewrite.
   nothing is placed and nothing is stale-removed (L7); the first cycle after the reopening judges freshness anew. A
   failed read of the quote or of the bars counts as not fresh.
   **The hour's decision** (L4) is made at the first cycle within the first 60 seconds of the H1 bar at which placing
-  is allowed (L7: the data fresh, the gate passing, the kill switch off, the terminal connected, nothing pending);
+  is allowed (L7: the data fresh, the gate passing, the kill switch off, the terminal connected, nothing pending) and
+  the close steps of the H1 bar just closed (its visits, its arming, the bar closes of its `exec_tf` bars) are done;
   if no such cycle comes by then, the hour is undecided - no candidates, no orders, its visits recorded `undecided`
   (L4), logged - and a decision is never made later in an hour.
 - **The arming epoch**: the line arming (ZONE_RULES rule 4) is computed from closed H1 bars starting at `epoch` (L9;
@@ -157,7 +159,9 @@ history of those rules is `git log -- eye/ZONE_LIVE.md` before this rewrite.
   `-`, `P1` or `P2`, `-`, then `n` = the digits up to the first non-digit; text the broker adds after it (e.g.
   `[sl 95.00]`) is ignored. A comment that does not read as a key is not ours.
 - **A broker expiry on every order** (the backstop if the runner dies): `ORDER_TIME_SPECIFIED`, at the close of the
-  current H1 bar + 1 minute; while the order is wanted the runner extends it to its current expiry + 1 hour from 10 minutes before it (an
+  current H1 bar + 1 minute; while the order is wanted beyond that time - the orders of the hour's setup; a candidate not yet the hour's setup
+  is removed in its hour's pre-close window and never extended - the runner extends it to its current expiry + 1 hour
+  from 10 minutes before it (an
   order modify - `RequestBuilder.modify_order`, `TRADE_ACTION_MODIFY`, the same price, SL, TP and the new expiry),
   retried each cycle while refused (the 1 and 10 minutes are fixed). A wanted order that expired anyway (its history
   state is expired) is placed again as the next placement (`n` + 1) - once that state is seen, so never beside a live
@@ -170,7 +174,8 @@ history of those rules is `git log -- eye/ZONE_LIVE.md` before this rewrite.
   bar -> hands-off. It is the only market entry.
 - **P1 refused** (placing it, or its market form, gets a refusal): P2 is not placed, or is removed if it was; the
   candidate, before it is the hour's setup, ends `dropped` (`refused`, logged; no reservation; the other candidate
-  keeps its orders); a P1 refused after its candidate became the hour's setup (a re-placement) -> hands-off (L8). **P2 never rests
+  keeps its orders); a P1 refused after its candidate became the hour's setup (any placement of it, the first included) -> hands-off
+  (L8). **P2 never rests
   without its setup's P1 resting or filled.**
 - **A new placement of a name** is sent only once every earlier placement of that name is known gone without a fill
   (its removal confirmed, its history state cancelled or expired, or its place request refused - it never existed) -
@@ -242,7 +247,8 @@ hour's open. In real time, orders must rest from `j0`:
 - **The end of the hour**: in the last `preclose_seconds` of the H1 bar, the orders of a live candidate not yet visited
   are removed (so none can fill in the next hour). A touch in that window still counts (found at the bar's close at
   the latest): the candidate is then the hour's setup and its orders are placed again at once as L5 allows (the next
-  placements). A live candidate not yet ended and with no visit by the hour's close ends `no fill` (one whose life already ended in
+  placements). A live candidate not yet ended and with no visit by the hour's close (judged after the close steps of the hour's last
+  `exec_tf` bar, its missed-touch check included) ends `no fill` (one whose life already ended in
   the hour - a cancel - keeps that outcome). The hour's setup lives on (L5).
 
 ## L5. The setup's life, bar by bar (ZONE_RULES rules 6, 7) [Claude]
@@ -364,8 +370,9 @@ when its last position has closed (its open volume is zero); **every order of th
     when the position is gone. Not done -> sent again next cycle. A target that no longer exists (the position closed,
     the order filled, cancelled or expired) ends the request (`moot`).
   - **place** (it can open exposure): **never sent again**. The row is `unknown` and is searched by its key every
-    cycle in the open orders, the positions and the deals. Found -> it is that placement's order or fill, managed as
-    any other (its row `sent` with the ticket). **Not found within one `exec_tf` bar -> hands-off.**
+    cycle in the open orders, the positions, the deals and the order history. Found -> it is that placement's order
+    or fill, managed as any other (its row `sent` with the ticket); found in the history cancelled or expired -> it
+    is gone without a fill (its row `moot`). **Not found within one `exec_tf` bar -> hands-off.**
 - **A close refused** (L4, L5): retried every cycle (placing stops meanwhile, L7); the position keeps its broker SL /
   TP; still not done after one `exec_tf` bar -> hands-off.
 - **P2 refused** when P1 is placed: retried each cycle while P2 is wanted; 3 refusals in the setup -> the setup goes on
@@ -440,7 +447,8 @@ pinned at start. The runner's own settings - `lot` (0.01, owner), `cycle_seconds
    - **Time**: the ticks of a bar are spread evenly over its period, the first at its open time, the last
      `preclose_seconds` / 2 before its `close_time`; the replay clock moves tick by tick. The runner's cycle runs in
      two modes, both required: after every tick (no polling gap), and every `cycle_seconds` of replay time.
-   - The runner runs on it unchanged (its clock and broker injected), on 2024-03 and 2026-03 with `exec_tf` M15, and on
+   - The runner runs on it unchanged (its clock and broker injected; the replay broker reports the server `FBS-Demo`,
+     so the runner reads the simulation's stored bars), on 2024-03 and 2026-03 with `exec_tf` M15, and on
      2026-03 with `exec_tf` M5.
    - **Both ways**: every simulated visit - every line `find_visits` returns, farther lines included - has its runner
      record with the same classification (`momentum`, `busy`, `abnormal`, `trend`, or the setup's outcome), and every

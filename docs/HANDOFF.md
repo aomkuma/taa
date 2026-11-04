@@ -310,8 +310,13 @@ measured.
   - **Sol round 7: 2** (no missed touch from the decision's own bar; the bar boundary through the first cycle that
     processed the closed bar); **Haiku: 2 guesses + 3 contradictions** (the decision cycle's own quote as a visit; a
     skipped first visit then the other's; L4's decision wording; "the magic" defined with its symbol; the both-filled
-    race at WARNING, an explained difference). All fixed; **Sol round 8 and Haiku under way.** Counts per round since
-    the rewrite - Sol 8, 5, 3, 1, 0, 1, 2; Haiku 64, 14, 9, 8, 5.
+    race at WARNING, an explained difference). All fixed.
+  - **Sol round 8: "No findings"** (the second clean Sol round). **Haiku: 7** (the decision waits for the closed H1
+    bar's close steps; the store must reach back to `epoch`; the replay reports `FBS-Demo`; the hour's last close
+    order; any P1 refusal after the visit; the unknown place searched in the history; **only the hour's setup's
+    orders get their expiry extended - an unvisited candidate's orders kept the broker backstop**). All fixed; **Sol
+    round 9 and Haiku under way.** Counts per round since the rewrite - Sol 8, 5, 3, 1, 0, 1, 2, 0; Haiku 64, 14, 9,
+    8, 5, 7.
   - **A rule from today** (the owner: *"why didn't you push to fix the root cause?"*): CLAUDE.md "Fix the root, not the
     symptom" - two review findings of the same kind in different places -> stop patching, one rule, one function.
   - **The owner (2026-11-03): small findings are fixed too** (*"the small ones should all be cleared, and the spec
