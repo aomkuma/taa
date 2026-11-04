@@ -27,8 +27,13 @@ trading run. Tests green means the code matches the spec, never "passed".
   process's placements, L5's fills, the basic hands-off as the safety net, the ownership classifier and the restart
   recovery deleted - then the replay spans for parity; track B (Sonnet, in parallel, new files only) the start's
   history checks (the pinned server's store and its depth, L2) and the tests of hands-off's eight causes; A wires B in.
-  **Track B done**: `app/zone/history_check.py` (`check_stored_history`, `check_overlap`; 37 tests pass) and
-  `tests/unit/test_zone_handsoff_causes.py` (34 tests, skipped until track A's runner lands). Track A under way.
+  **Track B done**: `app/zone/history_check.py` and `tests/unit/test_zone_handsoff_causes.py`. **Track A done**
+  (uncommitted): `app/zone/ownership.py` and the restart recovery deleted; the normal case kept; hands-off's eight
+  causes detected; ruff, mypy, bandit, architecture clean; every zone test file passes one at a time (handsoff 33).
+  **Replay**: 2024-03 M15 and 2026-03 M15 pass in both modes (2026-03: 46 / 46 visits, 7 / 7 setups); 2026-03 M5 one
+  difference - **a spec fault**: "decide in the H1 bar's first 60 s" left every daily-reopen hour undecided (the first
+  quote comes at about :05). The spec now counts the 60 s from the hour's first quote (Sol: no findings); the runner
+  is to follow, then the M5 replay again, then Sol's code review.
 - **`.env` (changed by Claude on the owner's word, 2026-11-04 18:22)**: `ENABLE_HIGH_RISK_PROFILE=false`,
   `ENABLE_LIVE_TRADING=true`, `LIVE_TRADING_CONFIRMATION=I-ACCEPT-LIVE-RISK-28941169` (`TRADING_MODE=LIVE`, `FBS-Real`) -
   **the LIVE gate is open**: anything of the system started now can trade LIVE. No strategy is enabled in

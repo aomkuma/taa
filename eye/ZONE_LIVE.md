@@ -131,7 +131,8 @@ Each rule says whose it is: **(owner)** or **[Claude]** (a form the owner did no
   nothing is placed and nothing is stale-removed (L7); the first cycle after the reopening judges freshness anew. A
   failed read of anything from the broker (the quote, the bars, the account, the terminal, the orders, positions,
   deals or history) makes the data not fresh at once (L8).
-  **The hour's decision** (L4) is made at the first cycle within the first 60 seconds of the H1 bar at which placing
+  **The hour's decision** (L4) is made at the first cycle within the first 60 seconds **from the hour's first quote**
+  (the H1 open, or - after the daily break or the weekend - the reopening, which comes minutes into the H1 bar) at which placing
   is allowed (L7: the data fresh, the gate passing, the kill switch off, the terminal connected, nothing pending) and
   the close steps of every bar closed at that open are done - the H1 bar's visits and arming, its `exec_tf` bars'
   closes, and the grids, pivots and steps of the D1 / H4 bars and the month that start then (ZONE_RULES 3: the grid in
@@ -195,7 +196,7 @@ Each rule says whose it is: **(owner)** or **[Claude]** (a form the owner did no
 The simulation decides at the H1 bar's close which lines were visited, and simulates their setups from `j0`, the
 hour's open. In real time, orders must rest from `j0`:
 
-- **At the hour's decision** (L2: the first cycle within the H1 bar's first 60 s at which placing is allowed; the
+- **At the hour's decision** (L2: the first cycle within 60 s of the hour's first quote at which placing is allowed; the
   hour is the broker's H1 bar):
   - The open `o` is the forming H1 bar's open (L2). The grid is the one in force at the hour.
   - **The candidates**: on each side, the nearest **armed** line of the grid - BUY: the highest armed line `L < o`;
@@ -260,8 +261,8 @@ hour's open. In real time, orders must rest from `j0`:
   the setup's id, and given its outcome when the setup ends (a setup still open at the end of a replay is compared
   with the simulation's `pending`, or `traded` with how `open`); a
   touch of a candidate dropped for a refused P1 `undecided`; a later visit in the hour of a candidate dropped for the
-  other's visit `busy` (the simulation: the hour's setup holds the hour); in an hour that is not reserved and that the runner did not decide (placing not allowed through its first
-  60 s, L2; started mid-hour; hands-off) every visit is recorded `undecided`, and in a decided hour every visit after
+  other's visit `busy` (the simulation: the hour's setup holds the hour); in an hour that is not reserved and that the runner did not decide (placing not allowed through the
+  60 s from its first quote, L2; started mid-hour; hands-off) every visit is recorded `undecided`, and in a decided hour every visit after
   an interruption (L7) or hands-off began in it is recorded `undecided` too (no fault; excluded from the parity
   check). A row
   per visit; a disagreement with what the runner did in a decided hour is logged at WARNING when it is one of L11's
@@ -531,7 +532,7 @@ pinned at start. The runner's own settings - `lot` (0.01, owner), `cycle_seconds
      cycle that has read and processed that closed bar, L2); a P2 placed after its P1 filled within the same bar (a marketable P1, or both placed
      again at a bar's open) and touched before it rested; L4's both-filled race (both candidates filled between two cycles); a missed touch (L4) in the polling
      mode; a withdrawal level or a BUY break-even level reached between two cycles (the polling mode - found at the
-     bar's close, L5); a touch in the hour's first 60 s before its decision placed the orders (L2); a SELL P2 filled before the BE bar's close was
+     bar's close, L5); a touch before the hour's decision placed the orders (L2); a SELL P2 filled before the BE bar's close was
      processed (L5); the tick rounding (L3) - an extreme within one tick of a price; **a TP inside the fill bar** (the broker's TP
      fires on any tick; the simulation counts a TP only on a bar after every fill). The setups after a difference must
      agree again once its reservation has ended.
@@ -563,7 +564,7 @@ pinned at start. The runner's own settings - `lot` (0.01, owner), `cycle_seconds
    - the deal order: P2's entry and P1's exit at the same `time_msc` (a gap through P2 and the SL), listed by the
      broker in either order - P2 is the setup's fill, then both exits;
    - the rules of this file, each named: a closed bar read late (its close steps wait; a fill meanwhile judged at its
-     own bar); no missed touch from the decision's own bar; a decision only in the first 60 s of the hour; a new placement only after the
+     own bar); no missed touch from the decision's own bar; a decision only within 60 s of the hour's first quote (a reopening hour decided at its first quote); a new placement only after the
      earlier one is known gone; the touch in the end-of-hour window re-placing; an expired P1 with its P2;
    - the requests: write-ahead with a crash before the send and after the broker accepted; a place of unknown outcome
      found in a later cycle (managed, never sent twice) and not found within one bar (hands-off); a remove and a modify
