@@ -306,8 +306,12 @@ measured.
     2 contradictions** - among them **the runner reads the stored bars of the pinned server
     (`data/history/<server>/XAUUSD`); only `FBS-Demo` exists, so a LIVE start needs the LIVE server's history fetched
     first** (and the zone set was built on FBS-Demo bars); the close steps wait for a readable closed bar; the first
-    visit only after the decision; BE with the logic TP and the bar's spread field. All fixed; **Sol round 7 and Haiku
-    under way.**
+    visit only after the decision; BE with the logic TP and the bar's spread field. All fixed.
+  - **Sol round 7: 2** (no missed touch from the decision's own bar; the bar boundary through the first cycle that
+    processed the closed bar); **Haiku: 2 guesses + 3 contradictions** (the decision cycle's own quote as a visit; a
+    skipped first visit then the other's; L4's decision wording; "the magic" defined with its symbol; the both-filled
+    race at WARNING, an explained difference). All fixed; **Sol round 8 and Haiku under way.** Counts per round since
+    the rewrite - Sol 8, 5, 3, 1, 0, 1, 2; Haiku 64, 14, 9, 8, 5.
   - **A rule from today** (the owner: *"why didn't you push to fix the root cause?"*): CLAUDE.md "Fix the root, not the
     symptom" - two review findings of the same kind in different places -> stop patching, one rule, one function.
   - **The owner (2026-11-03): small findings are fixed too** (*"the small ones should all be cleared, and the spec

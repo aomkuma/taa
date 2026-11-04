@@ -54,6 +54,8 @@ history of those rules is `git log -- eye/ZONE_LIVE.md` before this rewrite.
 - **Within one `exec_tf` bar** = within one `exec_tf` period of the moment the condition began (the send, or the first
   cycle that saw it).
 - **A fault** is logged at ERROR; a bar-boundary difference (L11) at WARNING.
+- **The magic**: the orders and positions of XAUUSD with the zone runner's magic number on the pinned account (L1);
+  nothing else is read, touched, or counted in "flat".
 - **Hands-off** (L8): placing stopped, every order of the magic removed, no position touched, until the magic is
   **flat** - no order and no position of the magic on the pinned account.
 - **Fresh** (L2) / **stale**: the data test for placing. **Market closed**: no quote newer than `stale_quote_seconds` and
@@ -182,7 +184,8 @@ history of those rules is `git log -- eye/ZONE_LIVE.md` before this rewrite.
 The simulation decides at the H1 bar's close which lines were visited, and simulates their setups from `j0`, the
 hour's open. In real time, orders must rest from `j0`:
 
-- **At the hour's decision** (the first fresh cycle of the H1 bar, L2; the hour is the broker's H1 bar):
+- **At the hour's decision** (L2: the first cycle within the H1 bar's first 60 s at which placing is allowed; the
+  hour is the broker's H1 bar):
   - The open `o` is the forming H1 bar's open (L2). The grid is the one in force at the hour.
   - **The candidates**: on each side, the nearest **armed** line of the grid - BUY: the highest armed line `L < o`;
     SELL: the lowest armed line `L > o` (a line equal to `o` is no candidate, as in the simulation). Lines nearer `o`
@@ -196,8 +199,9 @@ hour's open. In real time, orders must rest from `j0`:
     lies beyond P1, so P1 is then marketable too and fills first). A candidate that fails is **skipped**.
 - **The candidates' order** (the simulation's rule 4 order): the earlier `exec_tf` touch bar, then the one nearer `o`,
   then the lower line.
-- **The first visit of the hour**: the first quote **after the hour's decision** with the bid within `Z` of a
-  candidate (before the decision there are no candidates; a touch before it is an explained difference, L11) (BUY: bid <=
+- **The first visit of the hour**: the first quote **from the hour's decision on** with the bid within `Z` of a
+  candidate - the decision cycle's own quote included (a candidate already within `Z` then is visited at once); before
+  the decision there are no candidates, and a touch before it is an explained difference (L11) (BUY: bid <=
   L + Z; SELL: bid >= L - Z), or a deal of one of its orders (a fill means the bid reached it), whichever the runner
   sees first - the real order of the touches decides, also inside one `exec_tf` bar (where the simulation's fixed
   in-bar order may differ: an explained difference, L11). Both candidates seen in the same cycle: the candidates'
@@ -208,12 +212,16 @@ hour's open. In real time, orders must rest from `j0`:
     at once and it is `dropped`, and no other setup starts this hour (5b). Until the hour's close a candidate dropped
     this way (never one whose P1 was refused - that `dropped` is final at once) keeps following its bar loop (L5) with no orders, so that a missed touch (below) can still make it the hour's
     setup; at the hour's close its `dropped` is final.
-  - The first visited candidate **skipped** -> nothing is reserved; the other candidate stays as it is.
+  - The first visited candidate **skipped** -> nothing is reserved; the other candidate stays as it is, and its own
+    visit (later, or in the same cycle second in the candidates' order) makes it the hour's setup if it is live (a
+    skipped visit leaves the hour free, as in the simulation).
   - **Both live candidates filled before the runner removed one**: the hour's setup is the first in the candidates'
-    order; the other candidate's positions are closed at market, its orders removed, its row ends `dropped`, logged as
-    a fault.
+    order; the other candidate's positions are closed at market, its orders removed, its row ends `dropped`, logged at
+    WARNING (an explained difference, L11: both touched between two cycles).
   - **A touch the quotes missed** (the bid came within `Z` between two cycles and no deal followed): at each `exec_tf`
-    close the closed bar's bid low / high are checked against both candidates. A touch found there is a visit in that
+    close the closed bar's bid low / high are checked against both candidates - except the bar in which the hour's
+    decision was made, whose extremes may come from before the decision: in that bar only the quotes read after the
+    decision count (no missed touch is found there). A touch found there is a visit in that
     bar. A missed touch of a **skipped** candidate changes nothing. A missed touch of a **live** candidate that comes
     first in the candidates' order before the runner chose the hour's setup (a skipped first visit is no choice; its
     bar earlier than the chosen one's, or the same bar and first by the order) makes it the hour's setup: it is no longer `dropped`; its orders are placed again as its life
@@ -293,8 +301,8 @@ At each `exec_tf` bar **close** `j`, with at least one position of the setup ope
      the moment the bar's bid high so far reaches `mid` the unfilled P2 is removed - before the close, so it cannot
      fill on the next bar's first tick. A P2 filled in that bar before its removal took effect is the setup's fill
      (the simulation tests fills before the break-even). The BE itself is on at the close. A SELL P2 is removed at the
-     close (its trigger needs the bar's spread); a SELL P2 filled on the next bar's first tick is a bar-boundary
-     difference (L11), closed as L5's other fills.
+     close (its trigger needs the bar's spread); a SELL P2 filled after the BE bar's `close_time` and before the runner
+     has read and processed that closed bar is a bar-boundary difference (L11), closed as L5's other fills.
 
 **The exits** are the broker's (SL, TP or BE stop hit), read from the exit deals by position. How the setup exited =
 the kind of its first exit deal: `TP` (deal reason TP); `SL` (deal reason SL while the position's stop in force was
@@ -444,12 +452,12 @@ pinned at start. The runner's own settings - `lot` (0.01, owner), `cycle_seconds
      listed with its bar and the path's facts (the ticks around it, the runner's decisions and the simulation's); the
      harness may *suggest* a cause, and the run is accepted only once each difference is explained by hand against
      those facts and recorded in `eye/BOT_RESEARCH.md`. The causes that can explain one (the list is closed): the order of touches inside
-     one bar (the simulation's fixed in-bar order vs the path); the bar boundary (L5's pre-close window and the first
-     `cycle_seconds` of a bar); a P2 placed after its P1 filled within the same bar (a marketable P1, or both placed
-     again at a bar's open) and touched before it rested; a missed touch (L4) in the polling
+     one bar (the simulation's fixed in-bar order vs the path); the bar boundary (L5's pre-close window, and the time from a bar's `close_time` to the first
+     cycle that has read and processed that closed bar, L2); a P2 placed after its P1 filled within the same bar (a marketable P1, or both placed
+     again at a bar's open) and touched before it rested; L4's both-filled race (both candidates filled between two cycles); a missed touch (L4) in the polling
      mode; a withdrawal level or a BUY break-even level reached between two cycles (the polling mode - found at the
-     bar's close, L5); a touch in the hour's first 60 s before its decision placed the orders (L2); a SELL P2 filled on the first
-     tick after the BE bar (L5); the tick rounding (L3) - an extreme within one tick of a price; **a TP inside the fill bar** (the broker's TP
+     bar's close, L5); a touch in the hour's first 60 s before its decision placed the orders (L2); a SELL P2 filled before the BE bar's close was
+     processed (L5); the tick rounding (L3) - an extreme within one tick of a price; **a TP inside the fill bar** (the broker's TP
      fires on any tick; the simulation counts a TP only on a bar after every fill). The setups after a difference must
      agree again once its reservation has ended.
    - **The broker-side checks**, unconditional: every entry's symbol, type, side, lot, magic, key, price, SL, TP and
@@ -472,7 +480,8 @@ pinned at start. The runner's own settings - `lot` (0.01, owner), `cycle_seconds
      BE price in the logic, three other refusals -> hands-off (no market close, the broker SL / TP kept); the leftover P2 removed when the last position closes;
    - the reservation end (an exit inside a bar reserves to its `close_time`, equality blocks; a Friday exit does not
      block Monday's open; expiry);
-   - the rules of this file, each named: a decision only in the first 60 s of the hour; a new placement only after the
+   - the rules of this file, each named: a closed bar read late (its close steps wait; a fill meanwhile judged at its
+     own bar); no missed touch from the decision's own bar; a decision only in the first 60 s of the hour; a new placement only after the
      earlier one is known gone; the touch in the end-of-hour window re-placing; an expired P1 with its P2;
    - the requests: write-ahead with a crash before the send and after the broker accepted; a place of unknown outcome
      found in a later cycle (managed, never sent twice) and not found within one bar (hands-off); a remove and a modify
