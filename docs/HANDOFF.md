@@ -243,6 +243,13 @@ measured.
     never the sum), "a kept setup is managed on its own" (its own version, parameters and `exec_tf` bars), `be_j`
     and the kept state a row field. Sol on the spec: 2 conflicts (the BE wait vs L8; position volume) fixed, then
     "No findings". Next: Opus fixes the roots, Sol code review 3.
+  - **12:48, 2026-11-04 - the owner stopped the coding** (*"why does it keep finding new ones? review it all again,
+    no code yet; have Sonnet and Haiku brainstorm together and close the document - the system ran and the bot
+    opened orders normally before; make it end"*). Opus stopped before editing (the code is as Sol's review 2 saw
+    it, uncommitted). A Sonnet agent (why it does not converge; simplifications that delete whole classes of states;
+    every remaining gap at once) and a Haiku agent (every place a developer would guess, contradictions, duplicates,
+    undefined terms) are reading the whole of ZONE_LIVE.md, read-only. Then Claude consolidates, the owner decides
+    any scope change, the document is closed in one rewrite.
   - **A rule from today** (the owner: *"why didn't you push to fix the root cause?"*): CLAUDE.md "Fix the root, not the
     symptom" - two review findings of the same kind in different places -> stop patching, one rule, one function.
   - **The owner (2026-11-03): small findings are fixed too** (*"the small ones should all be cleared, and the spec
