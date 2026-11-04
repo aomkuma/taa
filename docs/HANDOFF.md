@@ -346,7 +346,12 @@ measured.
     open; an hour's setup's orders extended in later hours; hands-off keeps only removals; **the owner's-hand check
     compares the values the broker last accepted - a refused modify would otherwise have looked like the owner**; the
     modify-done test split; a missed touch ends the other `dropped` and joins L4's race; record classes; the magic
-    number from `app/cli`). All fixed; **Sol round 14 and Haiku under way.**
+    number from `app/cli`). All fixed.
+  - **Sol round 14: 2** (P1: an order shown filled, or a position, without its entry deal read was not pending - now
+    placing stops and hands-off after one bar; P2: the visit record of a setup still running - recorded `setup` at
+    once, given its outcome at the end). **Haiku: 4** (zone stop ends a setup without a fill `interrupted`; a
+    marketable P2 only after P1 in L3 too; a reserved hour never `undecided`; the hour's setup interrupted after its
+    visit keeps its record). All fixed; **Sol round 15 and Haiku under way.**
   - **A rule from today** (the owner: *"why didn't you push to fix the root cause?"*): CLAUDE.md "Fix the root, not the
     symptom" - two review findings of the same kind in different places -> stop patching, one rule, one function.
   - **The owner (2026-11-03): small findings are fixed too** (*"the small ones should all be cleared, and the spec

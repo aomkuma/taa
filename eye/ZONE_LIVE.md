@@ -177,7 +177,8 @@ history of those rules is `git log -- eye/ZONE_LIVE.md` before this rewrite.
   order (as `RequestBuilder` builds a market order: its deviation and the symbol's filling mode) with the same SL and
   TP instead of a limit. Its fill is a visit of its candidate (L4). It counts as **filled at its logic price P** in the
   setup's logic once the broker's deal exists; the broker's price is recorded beside it. No deal within one `exec_tf`
-  bar -> hands-off. It is the only market entry.
+  bar -> hands-off. It is the only market entry. A marketable P2 is sent only after its P1 has filled (L4's order of
+  placement).
 - **P1 refused** (placing it, or its market form, gets a refusal): P2 is not placed, or is removed if it was; the
   candidate, before it is the hour's setup, ends `dropped` (`refused`, logged; no reservation; the other candidate
   keeps its orders); a P1 refused after its candidate became the hour's setup (any placement of it, the first included) -> hands-off
@@ -230,7 +231,8 @@ hour's open. In real time, orders must rest from `j0`:
   touch the quotes missed (below).
   - The first visited candidate **live** -> it is **the hour's setup** (also when its life already ended before the
     visit by `no fill` or `cancel` - it keeps that outcome and reserves, L6; a candidate ended `interrupted`,
-    `hands-off` or `restart` is never the hour's setup and its visit is recorded `undecided`): the other candidate's orders are removed
+    `hands-off` or `restart` before its visit is never the hour's setup and that visit is recorded `undecided`; the
+    hour's setup interrupted after its visit keeps its visit's record): the other candidate's orders are removed
     at once and it is `dropped`, and no other setup starts this hour (5b). Until the hour's close a candidate dropped
     this way (never one whose P1 was refused - that `dropped` is final at once) keeps following its bar loop (L5) with no orders, so that a missed touch (below) can still make it the hour's
     setup; at the hour's close its `dropped` is final.
@@ -255,8 +257,10 @@ hour's open. In real time, orders must rest from `j0`:
 - **The hour's visits, recorded**: at each H1 close the runner computes the simulation's visits of that closed bar
   (`app.zone.core`, the function `find_visits` uses, with the runner's arming) - every line the bar visited, the
   farther ones too - and classifies each in the simulation's order: `momentum` (5a), `busy` (5b), `abnormal` (5c),
-  `trend` (5d, the state), else the setup's outcome (`no fill`, `cancel`, `traded` - the simulation's names); a
-  refused candidate's touch `undecided`; in an hour the runner did not decide (placing not allowed through its first
+  `trend` (5d, the state), else the setup's outcome (`no fill`, `cancel`, `traded` - the simulation's names) - recorded at once as `setup` with
+  the setup's id, and given its outcome when the setup ends (a setup still open at the end of a replay is compared
+  with the simulation's `pending`, or `traded` with how `open`); a
+  refused candidate's touch `undecided`; in an hour that is not reserved and that the runner did not decide (placing not allowed through its first
   60 s, L2; started mid-hour; hands-off) every visit is recorded `undecided`, and in a decided hour every visit after
   an interruption (L7) or hands-off began in it is recorded `undecided` too (no fault; excluded from the parity
   check). A row
@@ -372,7 +376,8 @@ when its last position has closed (its open volume is zero); **every order of th
   terminal is not connected (`terminal().connected` false, or a broker call raises a connection error), the data is
   not fresh (L2), a close the runner owes is not done (L8), an order of the magic that is not wanted still rests
   (its removal not yet confirmed), or **any condition is pending that L8 turns into hands-off after one `exec_tf`
-  bar** (causes 1, 2, 3 and 6: a place of unknown outcome, an order or a position of ours gone unexplained, a removal,
+  bar** (causes 1, 2, 3 and 6: a place of unknown outcome, an order or a position of ours gone unexplained or filled
+  without its entry deal, a removal,
   a close or a market entry not yet done) - each may still become exposure; and from a `zone stop` request on (L10).
   Managing goes on.
 - **Resting orders are removed** (every unfilled order of the magic, no expiry extended) at once when the kill switch
@@ -414,9 +419,10 @@ when its last position has closed (its open volume is zero); **every order of th
 - **Hands-off** (the owner, 2026-11-04: *"let it go"*). **When**: at a start that finds the magic not flat (below);
   and while running, when the runner cannot know or cannot do what the normal case needs -
   1. a place of unknown outcome not found within one `exec_tf` bar;
-  2. an order of ours that left the open orders without a history state or a deal explaining it within one
+  2. an order of ours that left the open orders without a history state or a deal explaining it, **or shown filled
+     (in the history, or by a position of ours) without its entry deal read**, within one `exec_tf` bar;
+  3. a position of ours gone without an exit deal explaining it, **or open without its entry deal read**, within one
      `exec_tf` bar;
-  3. a position of ours gone without an exit deal explaining it within one `exec_tf` bar;
   4. an order or a position of the magic that is not ours;
   5. a fill whose volume is not `lot` (a partial fill);
   6. a removal, a close or a market entry not done within one `exec_tf` bar (L3, L8), a modify not in force after 3 tries (L5),
@@ -467,7 +473,7 @@ pinned at start. The runner's own settings - `lot` (0.01, owner), `cycle_seconds
   and positions, the last requests, any order or position of the magic that is not ours.
 - `python -m app.cli zone stop` - under hands-off: the runner exits once every order of the magic is removed (the
   positions are the broker's). Otherwise it writes a stop request (a row the runner reads every cycle) and waits up to 60 s for
-  the runner's acknowledgement (else it says so and exits): the runner writes the acknowledgement once it has read the
+  the runner's acknowledgement (else it says so and exits): every setup of the runner without a fill ends `interrupted` (no reservation); the runner writes the acknowledgement once it has read the
   request and the broker confirms every unfilled order of the magic removed; it places nothing new; open positions are
   still managed (the BE, the exit, the leftover P2 removal) and the runner exits when none is open, or with `--now`
   as soon as the removals are confirmed (the positions keep their broker SL / TP and are the owner's). A removal not
