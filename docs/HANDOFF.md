@@ -267,7 +267,7 @@ measured.
     applies); `order_life_h` = 48. **Asked the owner**: the restart / uncertainty policy.
   - **The owner decided (2026-11-04)**: *"let it go - it can do nothing about it. Get the normal case right first; an
     abnormal case where the SL cannot be moved is out of our control anyway"* (after: *"if the program dies the orders
-    carry their expiry - it is the broker's matter"*). **ZONE_LIVE rewritten whole** (553 -> ~330 lines): a "Words"
+    carry their expiry - it is the broker's matter"*). **ZONE_LIVE rewritten whole** (553 -> 401 lines): a "Words"
     section defining every term once; ownership = "a placement this process sent", the setup's fills judged by its
     life (L5); **hands-off** (L8) for every start and for six causes while running (a place unknown after one bar,
     an order or position of ours gone unexplained after one bar, an order / position of the magic not ours, a fill
