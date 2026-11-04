@@ -129,10 +129,17 @@ Each rule says whose it is: **(owner)** or **[Claude]** (a form the owner did no
 - **Fresh data** (for placing only): the quote is younger than `stale_quote_seconds`, and every frame's last closed
   bar equals the broker's last closed bar of that frame. While the market is closed (the weekend, the daily break)
   nothing is placed and nothing is stale-removed (L7); the first cycle after the reopening judges freshness anew. A
-  failed read of anything from the broker (the quote, the bars, the account, the terminal, the orders, positions,
-  deals or history) makes the data not fresh at once (L8).
+  failed read of anything from the broker (the quote, the bars - the forming H1 bar included -, the account, the
+  terminal, the orders, positions, deals or history) makes the data not fresh at once, for that cycle (L8).
   **The hour's decision** (L4) is made at the first cycle within the first 60 seconds **from the hour's first quote**
-  (the H1 open, or - after the daily break or the weekend - the reopening, which comes minutes into the H1 bar) at which placing
+  (the H1 open, or - after the daily break or the weekend - the reopening, which comes minutes into the H1 bar) - **as
+  the runner knows it**, the earliest it can have been: the later of the H1 open and the **last pre-hour read** -
+  the time, taken just before the request, of the last successful quote read of this process whose quote was stamped
+  before the hour (the market had not yet quoted in the hour then); with no such read in this process, the H1 open.
+  Only a successful quote read moves it (a failed quote read leaves it; a failure of another read does not touch it).
+  A failed read, a pause or a start between that read and the hour's first quote read leaves the window counted from
+  that earlier time, so a late recovery never opens a new 60 s; continuous cycles through the daily break or the
+  weekend place the window at the reopening - at which placing
   is allowed (L7: the data fresh, the gate passing, the kill switch off, the terminal connected, nothing pending) and
   the close steps of every bar closed at that open are done - the H1 bar's visits and arming, its `exec_tf` bars'
   closes, and the grids, pivots and steps of the D1 / H4 bars and the month that start then (ZONE_RULES 3: the grid in
@@ -266,7 +273,11 @@ hour's open. In real time, orders must rest from `j0`:
   an interruption (L7) or hands-off began in it is recorded `undecided` too (no fault; excluded from the parity
   check). A row
   per visit; a disagreement with what the runner did in a decided hour is logged at WARNING when it is one of L11's
-  explained differences (the in-bar touch order, a missed touch, the bar boundary), else as a fault.
+  explained differences (the in-bar touch order, a missed touch, the bar boundary), else as a fault (ERROR). **The
+  in-bar touch order** is recognised so: the hour's setup is one candidate, the simulation classes the other
+  candidate's visit `setup`, and the two visits' touch bars (the `exec_tf` bar of each visit's first touch, as the
+  simulation computes it) are the same bar. Then the row of the visit the runner traded carries the hour's setup id
+  and its outcome whatever its class, and both rows are noted `in-bar touch order`.
 - **The arming** is updated at each H1 close from that closed bar - **after** that bar's visits are computed, which use
   the arming as it stood before the bar - exactly as the simulation does: every line the bar
   visited (bid low / high within Z, open on the far side) is disarmed - ordered or not, live or skipped - and re-armed
@@ -424,8 +435,11 @@ when its last position has closed (its open volume is zero); **every order of th
     the order filled, cancelled or expired) ends the request (`moot`).
   - **place** (it can open exposure): **never sent again**. The row is `unknown` and is searched by its key every
     cycle in the open orders, the positions, the deals and the order history. Found -> it is that placement's order
-    or fill, managed as any other (its row `sent` with the ticket); found in the history cancelled or expired -> it
-    is gone without a fill (its row `moot`). **Not found within one `exec_tf` bar -> hands-off.**
+    or fill, managed as any other (its row `sent` with the ticket; its ticket known from then on as an accepted
+    one's, L8 causes 2 and 7) - found filled in the history, its entry deal is awaited as cause 2 says; found in the
+    history expired -> it is gone without a fill (its row `moot`); found cancelled -> cause 7 (a cancel the runner
+    did not request: the runner sends no remove for a placement it has not found). **Not found within one `exec_tf`
+    bar -> hands-off.**
 - **A close refused** (L4, L5): retried every cycle (placing stops meanwhile, L7); the position keeps its broker SL /
   TP; still not done after one `exec_tf` bar -> hands-off.
 - **P2 refused** when P1 is placed: retried each cycle while P2 is wanted; 3 refusals in the setup (counted per setup, never reset) -> no further P2 placement in it; the setup goes on
@@ -512,7 +526,9 @@ pinned at start. The runner's own settings - `lot` (0.01, owner), `cycle_seconds
      SL at its price, a TP at its price, on the tick where the path crosses them, independent of the runner's cycles.
    - **Time**: the ticks of a bar are spread evenly over its period, the first at its open time, the last
      `preclose_seconds` / 2 before its `close_time`; the replay clock moves tick by tick. The runner's cycle runs in
-     two modes, both required: after every tick (no polling gap), and every `cycle_seconds` of replay time.
+     two modes, both required: after every tick (no polling gap) - and, through any gap between two ticks longer than
+     `stale_quote_seconds` (the daily break, the weekend, a quiet market), every `cycle_seconds` of replay time, as the
+     live runner keeps cycling (L2's last pre-hour read) -, and every `cycle_seconds` of replay time.
    - The runner runs on it unchanged (its clock and broker injected; the replay broker reports the server `FBS-Demo`,
      and the runner's store is the simulation's stored bars **cut at the replay's start**, so L2's start checks and
      freshness hold as on a live start; the replay starts a few seconds before an H1 open), on 2024-03 and 2026-03 with `exec_tf` M15, and on
