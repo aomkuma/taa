@@ -12,10 +12,6 @@ where the SL cannot be moved is out of our control anyway."* - **this file speci
 abnormal case is handed to the broker (L8, hands-off).**
 Each rule says whose it is: **(owner)** or **[Claude]** (a form the owner did not give, for the owner to change).
 
-**This file was rewritten whole on 2026-11-04** after the ownership / restart rules (the earlier L3a and L8) kept
-producing new review findings: they tried to carry every setup across a crash and an incomplete broker history. The
-history of those rules is `git log -- eye/ZONE_LIVE.md` before this rewrite.
-
 ## Words - each defined once, used only in this sense
 
 - **Terms of the setup** - the set and its parameters (`exec_tf`, `near_frac`, `away_frac`, `cancel_frac`, `order_life_h`,
@@ -314,7 +310,10 @@ TP. **Deals are taken in time order** (`time_msc`; entries and exits together) -
 P1 before P2, then the exits** (the simulation fills before it tests exits), whatever order the broker lists them in;
 only then is it judged whether the setup ended. **A deal waits while an entry of its setup is pending** (a position
 or a filled order of ours seen whose entry deal is not yet read): the buffered deals are judged together, in this order,
-once it is read (placing stops meanwhile, L7; hands-off after one `exec_tf` bar, L8). **The setup's fills** are, in that order: the first fill of each name that the
+once it is read (placing stops meanwhile, L7; hands-off after one `exec_tf` bar, L8). **The setup's whole bar loop
+waits with them**: its close steps (rules 1 - 3, the break-even, its exits) for the pending entry's bar and every later
+bar run only once the entry is read, then bar by bar in order - so a break-even never counts fills it has not seen.
+Removals for safety (L7, L8) do not wait. **The setup's fills** are, in that order: the first fill of each name that the
 life allows at its bar - P1 when rules 1 - 3 allow it, P2 once P1 has filled and before the break-even. A fill whose
 judging needs a bar not yet read (rule 2 needs `close[j-1]`) waits until it is (L2 - its position keeps its broker SL
 / TP; placing waits, L7), then is judged at its own bar. **Any other
@@ -547,6 +546,9 @@ pinned at start. The runner's own settings - `lot` (0.01, owner), `cycle_seconds
      block Monday's open; expiry);
    - a pending entry: P1's position seen with its entry deal not yet read and P2's deal read - P2 waits, then both are
      the setup's fills;
+   - a pending entry across a bar close: P2's position seen before the close, its deal read after it - the break-even
+     of that bar judged with both fills (`be_frac` 0.5; BUY P1 110, P2 85, TP 176, high 140: on with both, mid 136.75; off with P1
+     alone, mid 143);
    - the deal order: P2's entry and P1's exit at the same `time_msc` (a gap through P2 and the SL), listed by the
      broker in either order - P2 is the setup's fill, then both exits;
    - the rules of this file, each named: a closed bar read late (its close steps wait; a fill meanwhile judged at its
