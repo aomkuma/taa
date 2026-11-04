@@ -250,6 +250,21 @@ measured.
     every remaining gap at once) and a Haiku agent (every place a developer would guess, contradictions, duplicates,
     undefined terms) are reading the whole of ZONE_LIVE.md, read-only. Then Claude consolidates, the owner decides
     any scope change, the document is closed in one rewrite.
+  - **The whole-document review (13:00-13:15)**. **Haiku**: 62 places a developer would have to guess, 25
+    contradictions, 25 rules stated in more than one place, most L3a / L8 terms (kept, positions only, made while
+    down, first read, chosen, interrupted, dropped) defined twice or not at all. **Sonnet**: it does not converge
+    because ownership is inferred after the fact from many facts (O1-O5, F1-F12, each row depending on others); one
+    order is turned into many generations (the hourly expiry extension, the per-bar blocks, the pre-close window);
+    the restart is a second simulation of downtime although the owner chose "start fresh" (parity only for
+    uninterrupted runs); principles that contradict make dead states (a setup that can never end; two kept setups
+    against L7); prose review cannot enumerate the state space. 31 further gaps, among them **no check that the
+    account is a hedging account** (P1 and P2 would merge on a netting account), the comment length (~31 characters),
+    the weekend with a 48 h order life, a TP on the fill bar (the simulation counts TP only on a later bar).
+    Simplifications ranked; the largest: **the restart = remove every resting order, keep every open magic position
+    with its broker SL / TP, place nothing until the magic is flat** - deletes most of L8 and of L3a (F7, F9,
+    `kept_since`, the first read, the BE reconstruction, two kept setups). Claude checked: **the P2 block is a
+    no-op** (`step_setup`, core.py 733-746: P2 lies beyond P1, P1 is tested first, after a fill the block no longer
+    applies); `order_life_h` = 48. **Asked the owner**: the restart / uncertainty policy.
   - **A rule from today** (the owner: *"why didn't you push to fix the root cause?"*): CLAUDE.md "Fix the root, not the
     symptom" - two review findings of the same kind in different places -> stop patching, one rule, one function.
   - **The owner (2026-11-03): small findings are fixed too** (*"the small ones should all be cleared, and the spec
