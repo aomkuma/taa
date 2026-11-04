@@ -225,6 +225,12 @@ measured.
     **Claude's decision: the fixes3 assertion `chosen is True` becomes the reservation** (blocked while open and
     through the last exit bar's `close_time`, equality included), the position and fill checks kept. Sol: "No
     findings", the decision on the test right.
+  - **12:35 Opus: the reservation independent of chosen** (`_reserved`, `_end`, `_settle_restart`,
+    `store.last_reservation_end`); 51 ownership tests (two kept setups neither chosen block to the later exit bar's
+    close, equality; the reservation survives another restart; mutation checks); every zone file passes one at a
+    time, fixes4 unchanged, fixes3 with the one authorised assertion. Claude checked: every other existing test file
+    byte-identical to the 18:39 backup; ruff, mypy, bandit clean; architecture + ownership + fixes3 + fixes4 +
+    restart + trader **160 passed**. **Sol's code review 2 under way.**
   - **A rule from today** (the owner: *"why didn't you push to fix the root cause?"*): CLAUDE.md "Fix the root, not the
     symptom" - two review findings of the same kind in different places -> stop patching, one rule, one function.
   - **The owner (2026-11-03): small findings are fixed too** (*"the small ones should all be cleared, and the spec
