@@ -39,7 +39,16 @@ trading run. Tests green means the code matches the spec, never "passed".
   as BE, M15 requiring an M5 file, the live path writing the stored bars; the safety net, three roots: placing checked
   once per cycle not per send; the runner's view built from what it saw, not what it sent (manual exits with magic 0,
   the owner's-hand fields, accepted tickets); timers cleared before their action (stale removal, the 3-tries cap,
-  `stop --now`). **A Sonnet developer is fixing them** (normal case first), then Sol again.
+  `stop --now`). **All 13 fixed** (Sonnet, 2026-11-05; uncommitted; each with a test in
+  `tests/unit/test_zone_review_fixes8.py` that fails with its fix reverted): a marketable P2 only after P1's deal is
+  read; deal times to the millisecond; P2 tested against P1's block only; an exit at the original SL is `SL` unless the
+  BE stop was confirmed; only the required frames loaded (M15 needs no M5 file); the live path writes no bars; placing
+  re-checked before every send; deals of our positions kept whatever their magic; the latest accepted SL / expiry
+  expected; the 3-tries cap checked before the BE close; accepted tickets known at once; the stale removal owed until
+  done; `stop --now` exits after 60 s. Claude re-ran: ruff, mypy, bandit clean. **Replay 2026-03 M15 tick and M5 tick:
+  PASS** (46 / 46 visits, 7 / 7 setups, 0 differences, no WARNING line). Four old assertions held the behaviour L5
+  rule 3 and L7 forbid (P2's own block; P2 placed beside an unconfirmed market P1) - being changed to the spec; then
+  Sol reviews the code again.
 - **`.env` (changed by Claude on the owner's word, 2026-11-04 18:22)**: `ENABLE_HIGH_RISK_PROFILE=false`,
   `ENABLE_LIVE_TRADING=true`, `LIVE_TRADING_CONFIRMATION=I-ACCEPT-LIVE-RISK-28941169` (`TRADING_MODE=LIVE`, `FBS-Real`) -
   **the LIVE gate is open**: anything of the system started now can trade LIVE. No strategy is enabled in
