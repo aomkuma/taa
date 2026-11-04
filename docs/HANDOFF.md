@@ -301,7 +301,13 @@ measured.
     bar and agree with them, else it refuses: on LIVE this may need the history brought up to date from the LIVE
     server first**; a refused P2 could not be retried - a refused place now counts as gone, every retry `n` + 1; a
     refused candidate's later touch; the forming bar's extremes so far, re-judged at the close; a provisional
-    `dropped` not ended). All fixed; **Sol round 6 and Haiku under way.**
+    `dropped` not ended). All fixed.
+  - **Sol round 6: 1** (the hour's decision needs placing allowed, not only fresh data) - fixed; **Haiku: 6 guesses +
+    2 contradictions** - among them **the runner reads the stored bars of the pinned server
+    (`data/history/<server>/XAUUSD`); only `FBS-Demo` exists, so a LIVE start needs the LIVE server's history fetched
+    first** (and the zone set was built on FBS-Demo bars); the close steps wait for a readable closed bar; the first
+    visit only after the decision; BE with the logic TP and the bar's spread field. All fixed; **Sol round 7 and Haiku
+    under way.**
   - **A rule from today** (the owner: *"why didn't you push to fix the root cause?"*): CLAUDE.md "Fix the root, not the
     symptom" - two review findings of the same kind in different places -> stop patching, one rule, one function.
   - **The owner (2026-11-03): small findings are fixed too** (*"the small ones should all be cleared, and the spec
