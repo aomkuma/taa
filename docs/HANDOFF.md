@@ -294,7 +294,14 @@ measured.
     candidate; explained differences at WARNING) - fixed; **round 4**: Sol 1 (the one-bar wait for an order gone
     unexplained not blocking placing - the same question as round 3's first) - fixed at the root in L7: placing stops
     while ANY condition L8 turns into hands-off after one bar is pending; **round 5: Sol "No findings ... no remaining
-    normal-flow or safety-rule issues"**. A last Haiku behaviour sweep under way.
+    normal-flow or safety-rule issues"**.
+  - **Haiku's last sweep after Sol's clean round: 5 guesses + 4 contradictions** (the H1-close step order; a gate
+    failure at the decision -> undecided; the stop table; which exit deals are the owner's / a stop-out; **the stored
+    FBS-Demo bars vs the pinned server - the start now checks that the broker's bars reach the stored files' last
+    bar and agree with them, else it refuses: on LIVE this may need the history brought up to date from the LIVE
+    server first**; a refused P2 could not be retried - a refused place now counts as gone, every retry `n` + 1; a
+    refused candidate's later touch; the forming bar's extremes so far, re-judged at the close; a provisional
+    `dropped` not ended). All fixed; **Sol round 6 and Haiku under way.**
   - **A rule from today** (the owner: *"why didn't you push to fix the root cause?"*): CLAUDE.md "Fix the root, not the
     symptom" - two review findings of the same kind in different places -> stop patching, one rule, one function.
   - **The owner (2026-11-03): small findings are fixed too** (*"the small ones should all be cleared, and the spec
