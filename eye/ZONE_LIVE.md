@@ -32,11 +32,12 @@ history of those rules is `git log -- eye/ZONE_LIVE.md` before this rewrite.
   **skipped**. One `zone_live_setup` row per live candidate.
 - **The hour's setup**: the live candidate whose visit came first in the hour (L4). Only it reserves (L6). "Setup"
   alone means a live candidate, before or after its visit.
-- **Outcomes** (a setup's end): `no fill` (expiry, withdrawal, an unvisited candidate's hour over), `cancel` (the
-  closed-hour cancel, a blocked P1 touched), its exit (`SL`, `TP`, `BE`, `close` - closed by the runner), `dropped`
-  (lost the hour to the other candidate, or P1 refused), `interrupted` (L7), `hands-off` (L8), `restart` (L8).
-  **Ended** = has an outcome; nothing of an ended setup is wanted. Only `no fill`, `cancel` and an exit of the hour's
-  setup reserve (L6).
+- **Outcomes** (a setup's end), named as the simulation names them (`app/zone/core.py` `Setup.outcome`, `Setup.how`):
+  `no fill` (expiry, withdrawal, an unvisited candidate's hour over), `cancel` (the closed-hour cancel, a blocked P1
+  touched), `traded` (its last position closed) with **how** `SL`, `TP`, `BE` or `close` (closed by the runner - no
+  simulation counterpart); and the runner's own: `dropped` (lost the hour to the other candidate, or P1 refused),
+  `interrupted` (L7), `hands-off` (L8), `restart` (L8). **Ended** = has an outcome; nothing of an ended setup is
+  wanted. Only `no fill`, `cancel` and `traded` of the hour's setup reserve (L6).
 - **Logic price** = the unrounded price of the simulation; **sent price** = the price sent, rounded to the tick;
   **broker price** = the price of the broker's deal.
 - **Order names**: P1 and P2 (ZONE_RULES rule 6). A **placement** is one place request of a name; its `n` counts the
@@ -54,7 +55,7 @@ history of those rules is `git log -- eye/ZONE_LIVE.md` before this rewrite.
 - **Hands-off** (L8): placing stopped, every order of the magic removed, no position touched, until the magic is
   **flat** - no order and no position of the magic on the pinned account.
 - **Fresh** (L2) / **stale**: the data test for placing. **Market closed**: no quote newer than `stale_quote_seconds` and
-  no H1 bar expected now by the previous four weeks' stored H1 bars at this weekday and time.
+  no stored H1 bar at this weekday and hour in any of the previous four weeks.
 
 ## L0. Shape - one logic, two drivers [Claude]
 
@@ -62,7 +63,8 @@ history of those rules is `git log -- eye/ZONE_LIVE.md` before this rewrite.
   prices and its bar-by-bar life) is in `app/zone/core.py`; the parameters `ZoneParams` in `app/zone/params.py`.
   `eye/zone_bot.py` keeps its command line, its outputs and charts and imports the logic from `app.zone.core`;
   `eye/zone_config.py` keeps its command line and re-exports `app.zone.params`. The reading of
-  `data/bot_config.db` (the parameter sets) is in `app/zone/params.py`'s store functions, called only by the drivers.
+  `data/bot_config.db` (the parameter sets) is in `app/zone/params.py`'s store functions (standard-library `sqlite3`
+  only, allowed in the pure layer), called only by the drivers.
 - The bar-by-bar life of a setup is written once, as `step_setup` in `core.py`: given the setup's state after bar
   `j-1` and bar `j`'s values, it returns the state after bar `j`. `simulate_setup` loops it over stored bars; the
   runner uses its tests (`expired_at`, `moved_away`, `closed_hour_cancel`, `entry_blocked`, the break-even trigger)
@@ -118,8 +120,11 @@ history of those rules is `git log -- eye/ZONE_LIVE.md` before this rewrite.
   is not fresh by then, the hour gets no orders (logged) - a decision is never made later in an hour.
 - **The arming epoch**: the line arming (ZONE_RULES rule 4) is computed from closed H1 bars starting at `epoch` (L9;
   default 2023-10-01, the simulation's start) - the same arming the simulation computes on a run from that date - up
-  to the last closed H1 bar, and kept up to date at each H1 close (L4). The grid in force and the pivots at a moment
-  are the simulation's at that moment (ZONE_RULES: the grid in force at t, pivots known by t). The set's version is pinned at start; a change of the set in the database takes effect
+  to the last closed H1 bar, and kept up to date at each H1 close (L4). The grids, pivots, weekly ATR and monthly steps
+  are computed as the simulation computes them - over the whole stored series from each file's first bar, each known
+  by t (ZONE_RULES 2, 3); `epoch` limits only the arming. **A candidate's step `S`, line and prices are fixed at the
+  hour's decision** for its whole life (the simulation plans a setup from its visit's grid); a later grid in force
+  changes only later hours' candidates. The set's version is pinned at start; a change of the set in the database takes effect
   only at a restart (logged).
 
 ## L3. The setup's prices and orders [Claude]
@@ -148,7 +153,8 @@ history of those rules is `git log -- eye/ZONE_LIVE.md` before this rewrite.
   setup's logic once the broker's deal exists; the broker's price is recorded beside it. No deal within one `exec_tf`
   bar -> hands-off. It is the only market entry.
 - **P1 refused** (placing it, or its market form, gets a refusal): P2 is not placed, or is removed if it was; the
-  candidate ends `dropped` (`refused`, logged; no reservation; the other candidate keeps its orders). **P2 never rests
+  candidate, before it is the hour's setup, ends `dropped` (`refused`, logged; no reservation; the other candidate
+  keeps its orders); a P1 refused after its candidate became the hour's setup (a re-placement) -> hands-off (L8). **P2 never rests
   without its setup's P1 resting or filled.**
 - **A new placement of a name** is sent only once every earlier placement of that name is known gone without a fill
   (its removal confirmed, or its history state cancelled or expired) - never beside one whose removal is refused or of
@@ -171,13 +177,17 @@ hour's open. In real time, orders must rest from `j0`:
     candidate is read with the visit readings of the simulation for a visit at this hour and side (5a momentum, 5c
     abnormal, 5d the state - all from bars closed before the hour); a candidate that passes is **live** (a new row,
     its placements from `n` = 0) and gets its orders (L3) as L5 allows - a P1 blocked at `j0` (L5 rule 3) gets its
-    first placement (`n` = 0) at the first bar it is not blocked, P2 with it. A candidate that fails is **skipped**.
+    first placement (`n` = 0) at the first bar it is not blocked, P2 with it. **P1 is always sent before P2**, and P2
+    only once P1's place is `sent` or filled; a P2 already marketable is sent at market only after P1 has filled (it
+    lies beyond P1, so P1 is then marketable too and fills first). A candidate that fails is **skipped**.
 - **The candidates' order** (the simulation's rule 4 order): the earlier `exec_tf` touch bar, then the one nearer `o`,
   then the lower line.
 - **The first visit of the hour**: the first quote of the hour with the bid within `Z` of a candidate (BUY: bid <=
   L + Z; SELL: bid >= L - Z), or a deal of one of its orders (a fill means the bid reached it), whichever the runner
-  sees first. Both candidates seen in the same cycle: the candidates' order (the same touch bar: the nearer `o`, then
-  the lower line).
+  sees first - the real order of the touches decides, also inside one `exec_tf` bar (where the simulation's fixed
+  in-bar order may differ: an explained difference, L11). Both candidates seen in the same cycle: the candidates'
+  order (the same touch bar: the nearer `o`, then the lower line). The candidates' order also decides L4's
+  both-filled race and a touch the quotes missed (below).
   - The first visited candidate **live** -> it is **the hour's setup** (also when its life already ended before the
     visit - a cancel, a withdrawal - it keeps that outcome and reserves, L6): the other candidate's orders are removed
     at once, its row ends `dropped`, and no other setup starts this hour (5b).
@@ -190,19 +200,21 @@ hour's open. In real time, orders must rest from `j0`:
     bar. A missed touch of a **skipped** candidate changes nothing. A missed touch of a **live** candidate that comes
     first in the candidates' order before the runner chose (its bar earlier than the chosen one's, or the same bar and
     first by the order) makes it the hour's setup: the other live candidate's orders are removed, its positions closed
-    at market, its row ends `dropped`, logged as a fault (`missed touch`).
+    at market, its row ends `dropped`, logged at WARNING (`missed touch` - an explained difference, L11).
 - **The hour's visits, recorded**: at each H1 close the runner computes the simulation's visits of that closed bar
   (`app.zone.core`, the function `find_visits` uses, with the runner's arming) - every line the bar visited, the
   farther ones too - and classifies each in the simulation's order: `momentum` (5a), `busy` (5b), `abnormal` (5c),
-  `trend` (5d, the state), else the hour's setup. A row per visit; a disagreement with what the runner did in the
-  hour is logged as a fault.
+  `trend` (5d, the state), else the hour's setup; in an hour the runner did not decide (not fresh in its first 60 s,
+  started mid-hour, hands-off) every visit is recorded `undecided` (no fault; excluded from the parity check). A row
+  per visit; a disagreement with what the runner did in a decided hour is logged as a fault.
 - **The arming** is updated at each H1 close from that closed bar, exactly as the simulation does: every line the bar
   visited (bid low / high within Z, open on the far side) is disarmed - ordered or not, live or skipped - and re-armed
   by the simulation's rule.
 - **The end of the hour**: in the last `preclose_seconds` of the H1 bar, the orders of a live candidate not yet visited
   are removed (so none can fill in the next hour). A touch in that window still counts (found at the bar's close at
   the latest): the candidate is then the hour's setup and its orders are placed again at once as L5 allows (the next
-  placements). A live candidate with no visit by the hour's close ends `no fill`. The hour's setup lives on (L5).
+  placements). A live candidate not yet ended and with no visit by the hour's close ends `no fill` (one whose life already ended in
+  the hour - a cancel - keeps that outcome). The hour's setup lives on (L5).
 
 ## L5. The setup's life, bar by bar (ZONE_RULES rules 6, 7) [Claude]
 
@@ -261,8 +273,9 @@ At each `exec_tf` bar **close** `j`, with at least one position of the setup ope
      difference (L11), closed as L5's other fills.
 
 **The exits** are the broker's (SL, TP or BE stop hit), read from the exit deals by position. How the setup exited =
-the kind of its first exit deal: `TP` (deal reason TP), `SL` (deal reason SL before the break-even), `BE` (deal reason
-SL after it, or L5's close at the BE price), `close` (any other close by the runner). The setup **ends at its exit**
+the kind of its first exit deal: `TP` (deal reason TP); `SL` (deal reason SL while the position's stop in force was
+the original SL); `BE` (deal reason SL while the stop in force was the BE stop - its modify confirmed - or L5's close
+at the BE price); `close` (any other close by the runner). The setup **ends at its exit**
 when its last position has closed (its open volume is zero); **every order of the setup is then removed at once**.
 
 ## L6. The setup's end and the reservation (rule 5b) [Claude]
@@ -282,11 +295,13 @@ when its last position has closed (its open volume is zero); **every order of th
   < old SL).
 - No market entry except L3's marketable order; no market close except those L4, L5 and L8 name.
 - Never more than one setup's orders at a time, except the two candidates of an hour before its first visit (at most
-  four orders; never both kept filled - L4).
+  four orders). **Two setups' exposure** exists only in L4's race - both candidates filled between two cycles - and
+  only until the loser's positions are closed (at once; hands-off if not done within one `exec_tf` bar).
 - Never another magic's, another symbol's or another account's orders or positions.
 - **Placing stops** while the gate fails, the kill switch is on (the system's kill switch, read every cycle), the
   terminal is not connected (`terminal().connected` false, or a broker call raises a connection error), the data is
-  not fresh (L2), or a close the runner owes is not done (L8). Managing goes on.
+  not fresh (L2), a close the runner owes is not done (L8), or an order of the magic that is not wanted still rests
+  (its removal not yet confirmed). Managing goes on.
 - **Resting orders are removed** (every unfilled order of the magic, no expiry extended) when the kill switch is on,
   when the gate fails, and when the data has been stale for longer than one `exec_tf` bar while the market is open
   (the rules of L5 can no longer be judged; timed from the first stale cycle). A setup with a fill keeps its positions managed; a setup without a fill
@@ -328,10 +343,14 @@ when its last position has closed (its open volume is zero); **every order of th
   4. an order or a position of the magic that is not ours;
   5. a fill whose volume is not `lot` (a partial fill);
   6. a removal, a close or a market entry not done within one `exec_tf` bar (L3, L8), a modify refused 3 times (L5),
-     a placement `n` over 999 (L3).
+     a placement `n` over 999 (L3), a P1 refused after its candidate became the hour's setup (L3);
+  7. **the owner acting by hand** on an order or a position of the magic (the owner: *"I watch the trades and take the
+     risk myself"*): an exit deal whose reason is not SL, TP or the runner's own close (`DEAL_REASON_CLIENT`,
+     `MOBILE`, `WEB`); a wanted order cancelled without the runner's remove request; an SL or a TP that differs from
+     the one the runner set. The owner has taken over; the runner resumes when the magic is flat.
   **What**: placing stops; every resting order of the magic is removed (ours P2 before P1 of a key, the rest in any
   order; retried each cycle); **no position is touched** - each keeps its broker SL / TP and runs to its end at the
-  broker: owed closes, modifies and the break-even stop, and a `zone stop` does not touch them either; every setup
+  broker - the runner sends no close, no modify and no break-even for it, and a `zone stop` changes nothing of it; every setup
   not ended ends `hands-off` (logged ERROR, shown in `zone status`). A position that is not ours is the owner's to
   close; `zone status` names it. **Until**: the magic is flat (a successful read: no order, no position). Then every
   request of the run is closed (`unknown` ones `moot`), its keys are no longer ours (anything of them that appears
@@ -340,7 +359,8 @@ when its last position has closed (its open volume is zero); **every order of th
 - **The start** (every `zone run`, the first one and every restart): the broker's orders, positions and deals are read
   (a failed read is never an empty account: nothing is decided until a read succeeds); deals and history are read
   from the process's start on. Every unfinished row of the
-  store ends `restart`; any stop request left open by a runner that died is closed (logged - `zone run` is the owner's
+  store ends `restart`, and every request of a previous process is closed (`intent` and `unknown` ones `moot`) - its
+  keys are not ours, so anything of them that appears later is "not ours" (hands-off cause 4); any stop request left open by a runner that died is closed (logged - `zone run` is the owner's
   explicit start). If the magic is not flat -> hands-off until it is; if it is flat, no hands-off. The arming is rebuilt from the closed H1 bars
   from `epoch` (L2). The first decision is at the first H1 open after the start (or after the flat book) - never in
   the middle of an hour.
@@ -359,7 +379,8 @@ pinned at start. The runner's own settings - `lot` (0.01, owner), `cycle_seconds
 - `python -m app.cli zone run --market XAUUSD --set default` - the mode from `.env`; runs until stopped.
 - `python -m app.cli zone status` - the pinned account, hands-off or not, the hour's candidates, the setup, its orders
   and positions, the last requests, any order or position of the magic that is not ours.
-- `python -m app.cli zone stop` - (under hands-off: L8 holds, nothing is touched) writes a stop request (a row the runner reads every cycle) and waits up to 60 s for
+- `python -m app.cli zone stop` - under hands-off: the runner exits once every order of the magic is removed (the
+  positions are the broker's). Otherwise it writes a stop request (a row the runner reads every cycle) and waits up to 60 s for
   the runner's acknowledgement (else it says so and exits): the runner removes every unfilled order of the magic and
   places nothing new; open positions are still managed (the BE, the exit, the leftover P2 removal) and the runner
   exits when none is open, or at once with `--now` (the positions keep their broker SL / TP and are the owner's).
@@ -384,7 +405,8 @@ pinned at start. The runner's own settings - `lot` (0.01, owner), `cycle_seconds
      2026-03 with `exec_tf` M5.
    - **Both ways**: every simulated visit - every line `find_visits` returns, farther lines included - has its runner
      record with the same classification (`momentum`, `busy`, `abnormal`, `trend`, or the setup's outcome), and every
-     runner record has its simulated visit. For each setup: outcome, visit hour, line, side, each fill (P1 / P2, its
+     runner record has its simulated visit (the records come from L4's visits at the H1 close, not from the rows). For
+     each setup: outcome and how (by the names of Words), visit hour, line, side, each fill (P1 / P2, its
      `exec_tf` bar and price), the BE (its bar and stop), the exit (bar, how, price), and the reservation end. Prices
      agree within one tick; bars exactly.
    - **The gate**: zero **unexplained** differences and no runner log line at ERROR or above. Each difference is
@@ -400,7 +422,7 @@ pinned at start. The runner's own settings - `lot` (0.01, owner), `cycle_seconds
      agree again once its reservation has ended.
    - **The broker-side checks**, unconditional: every entry's symbol, type, side, lot, magic, key, price, SL, TP and
      expiry; no place request sent twice; never two live placements of one name; P2 never resting without its P1
-     resting or filled; never two setups' exposure; no order resting after its setup's end (beyond the bar boundary);
+     resting or filled; never two setups' exposure beyond L4's race (L7); no order resting after its setup's end (beyond the bar boundary);
      every market close justified. **The comparisons** (every fill, exit and stop move against the simulation, both
      ways, and the end state) are judged with the explained differences above. The exact cycle at which an
      order is placed or removed is checked by the unit tests (3), not by the replay.
@@ -415,7 +437,7 @@ pinned at start. The runner's own settings - `lot` (0.01, owner), `cycle_seconds
      window removes and re-places; a marketable order; the fills - a second fill of a name, a fill of a superseded
      placement, a fill after the end, a P2 without P1, a P2 after the BE: each closed;
    - the BE once, both SLs, P2 removed (BUY ahead, a P2 filled in the trigger bar kept), a refused modify closed at the
-     BE price in the logic, three other refusals closed; the leftover P2 removed when the last position closes;
+     BE price in the logic, three other refusals -> hands-off (no market close, the broker SL / TP kept); the leftover P2 removed when the last position closes;
    - the reservation end (an exit inside a bar reserves to its `close_time`, equality blocks; a Friday exit does not
      block Monday's open; expiry);
    - the rules of this file, each named: a decision only in the first 60 s of the hour; a new placement only after the
@@ -425,7 +447,7 @@ pinned at start. The runner's own settings - `lot` (0.01, owner), `cycle_seconds
      of unknown outcome judged by the ticket's state; the expiry set and extended each hour, an expired wanted order
      placed again; P1 refused (no P2 alone); P2 refused three times; a P2 removal refused (P1 held; hands-off after one
      bar); a close refused (placing stopped; hands-off after one bar); a modify refused three times (hands-off);
-   - hands-off: each of its six causes; every order removed, no position touched, rows ended `hands-off`, the first
+   - hands-off: each of its seven causes (the owner's hand: a manual close, a manual cancel, a changed SL / TP); every order removed, no position touched, rows ended `hands-off`, the first
      decision at the first H1 open after the book is flat;
    - the start: an empty store and a flat magic (the first decision at the next H1 open); unfinished rows ended
      `restart`; orders or positions of the magic at start (hands-off); a failed first read (nothing decided);

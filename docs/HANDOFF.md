@@ -283,7 +283,13 @@ measured.
     reference to ZONE_RULES - now a "Terms of the setup" line in Words; real ones: the outcomes and which reserve,
     the end-of-hour touch, pre-close only before a fill, the visit table, `moot`, pivots known by t, the key's `n`
     bound, the expiry extension value, the exit kinds, the SELL P2 at the BE bar, the partial fill). All fixed
-    (446 lines); **round 2 (Sol + Haiku) under way.**
+    (446 lines).
+  - **Round 2**: Sol 5 (pending removals must block placing; two setups' exposure only in L4's race; the exit `how`
+    by the stop in force; outcomes by the simulation's names - `traded` + how; an acceptance case); Haiku (behaviour
+    only) 7 guesses + 7 contradictions - the new one: **the owner acting by hand** (a manual close, cancel, SL / TP
+    change) - written as hands-off cause 7 [Claude, for the owner to confirm]; grids over the whole series, S fixed
+    at the decision; P1 before P2; undecided hours; market closed; a previous process's requests; the real touch
+    order. All fixed; **Sol round 3 under way.**
   - **A rule from today** (the owner: *"why didn't you push to fix the root cause?"*): CLAUDE.md "Fix the root, not the
     symptom" - two review findings of the same kind in different places -> stop patching, one rule, one function.
   - **The owner (2026-11-03): small findings are fixed too** (*"the small ones should all be cleared, and the spec
