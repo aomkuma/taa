@@ -35,8 +35,8 @@ trading run. Tests green means the code matches the spec, never "passed".
   `config.yaml`; DEMO and the observer are off in Task Scheduler; the zone runner is not started (the owner's word).
 - **FBS-Real history fetched** (read-only, D1 / H4 / H1 / M15 from 2021-08-22; `data/history/FBS-Real/XAUUSD`, passes
   `history_check`). Its bars differ from FBS-Demo's by under 0.40 USD on 99 % (up to 9 USD on news bars; measured,
-  `eye/BOT_RESEARCH.md`). **Asked the owner**: a simulation of the zone set on FBS-Real bars, to see what this does to
-  its setups.
+  `eye/BOT_RESEARCH.md`). **The zone set on FBS-Real bars** (cut to FBS-Demo's first bars): 107 setups, +0.399 R a
+  setup, +1868.86 USD, drawdown -280.02 - against FBS-Demo's 109, +0.392 R; the differences are in 2024.
 - **Before a LIVE start**: the runner reads the stored bars of the pinned server (`data/history/FBS-Real/XAUUSD`),
   brought up to date from the broker at start (L2).
 - **The simulation** (built 2026-11-02, `eye/zone_bot.py`, set `XAUUSD/default@v26` in `data/bot_config.db`): October

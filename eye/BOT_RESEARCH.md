@@ -1961,3 +1961,11 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
   (`XAUUSD/default@v26`), 2023-10-01 to 2026-11-01, on `data/history/FBS-Real/XAUUSD`. Expected: most setups the same
   (same hour, line, side); a few differ where a pivot or a touch sits within cents of a threshold - more in 2024
   (27 % identical bars); the result within about 0.1 R a setup of the FBS-Demo run's +0.392 (109 setups).
+- **The zone set on FBS-Real bars - measured (2026-11-04)**: the FBS-Real store cut to FBS-Demo's first bars
+  (`app/zone/history_check.py` - uncut, the D1 series starting 2021-08-22 asks a step for August 2021 with too short a
+  history, and the run refuses), the same set and dates; outputs `eye/research/zone/XAUUSD/default_fbs_real/`.
+  **107 setups, +0.399 R a setup, 42 % TP, +1868.86 USD, drawdown -280.02** (FBS-Demo: 109, +0.392 R, 41 %, +1868.92,
+  -279.96). Setup by setup: 103 the same visit, 28 of them on a line a few cents apart with the same exit; four setups
+  moved one hour (the same line and side); FBS-Demo alone has 2024-01-11 23:00 BUY 2015.26 TP and 2024-04-19 BUY BE;
+  the 2024-01-11 SELL 2037.99 exits TP on FBS-Real, BE on FBS-Demo. The differences sit in 2024 (32 -> 30 setups) and a
+  few cents in 2025; 2023 and 2026 identical. As expected: within 0.1 R a setup, concentrated in 2024.
