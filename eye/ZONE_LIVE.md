@@ -161,9 +161,9 @@ history of those rules is `git log -- eye/ZONE_LIVE.md` before this rewrite.
   `-`, `P1` or `P2`, `-`, then `n` = the digits up to the first non-digit; text the broker adds after it (e.g.
   `[sl 95.00]`) is ignored. A comment that does not read as a key is not ours.
 - **A broker expiry on every order** (the backstop if the runner dies): `ORDER_TIME_SPECIFIED`, at the close of the
-  current H1 bar + 1 minute; while the order is wanted beyond that time - the orders of the hour's setup; a candidate not yet the hour's setup
-  is removed in its hour's pre-close window and never extended - the runner extends it to its current expiry + 1 hour
-  from 10 minutes before it (an
+  current H1 bar + 1 minute. Only the orders of the hour's setup are extended (a candidate not yet the hour's setup is
+  removed in its hour's pre-close window and never extended): from the first cycle at or after its current expiry
+  minus 10 minutes (the H1 close - 9 minutes), the runner sets the expiry to the current expiry + 1 hour (an
   order modify - `RequestBuilder.modify_order`, `TRADE_ACTION_MODIFY`, the same price, SL, TP and the new expiry),
   retried each cycle while refused (the 1 and 10 minutes are fixed). A wanted order that expired anyway (its history
   state is expired) is placed again as the next placement (`n` + 1) - once that state is seen, so never beside a live
@@ -203,8 +203,9 @@ hour's open. In real time, orders must rest from `j0`:
     grid's step) depend only on the hour and the side, never on the line, and 5b on the hour - so when the
     nearest armed line is skipped, every farther line of that side is skipped too, and the side has no setup that
     hour.
-  - **The skips at the open**: when the hour is reserved (L6), the hour has no candidates (no rows, no orders) and
-    its visits are recorded `busy` (5b) at the H1 close. Else each
+  - **The skips at the open**: when the hour is reserved (L6), the hour has no candidates (no rows, no orders); its
+    visits are classified at the H1 close in the simulation's order like any other (`momentum` when 5a applies, else
+    `busy`). Else each
     candidate is read with the visit readings of the simulation for a visit at this hour and side (5a momentum, 5c
     abnormal, 5d the state - all from bars closed before the hour); a candidate that passes is **live** (a new row,
     its placements from `n` = 0) and gets its orders (L3) as L5 allows - a P1 blocked at `j0` (L5 rule 3) gets its
@@ -223,7 +224,8 @@ hour's open. In real time, orders must rest from `j0`:
   both-filled race (each candidate's touch bar there = the `exec_tf` bar of its first entry deal, by `time_msc`) and a
   touch the quotes missed (below).
   - The first visited candidate **live** -> it is **the hour's setup** (also when its life already ended before the
-    visit - a cancel, a withdrawal - it keeps that outcome and reserves, L6): the other candidate's orders are removed
+    visit by `no fill` or `cancel` - it keeps that outcome and reserves, L6; a candidate ended `interrupted`,
+    `hands-off` or `restart` is never the hour's setup and its visit is recorded `undecided`): the other candidate's orders are removed
     at once and it is `dropped`, and no other setup starts this hour (5b). Until the hour's close a candidate dropped
     this way (never one whose P1 was refused - that `dropped` is final at once) keeps following its bar loop (L5) with no orders, so that a missed touch (below) can still make it the hour's
     setup; at the hour's close its `dropped` is final.
@@ -247,7 +249,8 @@ hour's open. In real time, orders must rest from `j0`:
   (`app.zone.core`, the function `find_visits` uses, with the runner's arming) - every line the bar visited, the
   farther ones too - and classifies each in the simulation's order: `momentum` (5a), `busy` (5b), `abnormal` (5c),
   `trend` (5d, the state), else the hour's setup; in an hour the runner did not decide (placing not allowed through its first
-  60 s, L2; started mid-hour; hands-off) every visit is recorded `undecided` (no fault; excluded from the parity check). A row
+  60 s, L2; started mid-hour; hands-off) every visit is recorded `undecided`, and in a decided hour every visit after
+  an interruption (L7) or hands-off began in it (no fault; excluded from the parity check). A row
   per visit; a disagreement with what the runner did in a decided hour is logged at WARNING when it is one of L11's
   explained differences (the in-bar touch order, a missed touch, the bar boundary), else as a fault.
 - **The arming** is updated at each H1 close from that closed bar - **after** that bar's visits are computed, which use
@@ -293,7 +296,9 @@ Before the setup's first fill, for each bar `j`, in the simulation's order:
 
 **Fills** are the broker's entry deals of the setup's orders: P1 and P2 each open a position with the setup's SL and
 TP. **The setup's fills** are, in deal-time order (P1 before P2 at one time): the first fill of each name that the
-life allows at its bar - P1 when rules 1 - 3 allow it, P2 once P1 has filled and before the break-even. **Any other
+life allows at its bar - P1 when rules 1 - 3 allow it, P2 once P1 has filled and before the break-even. A fill whose
+judging needs a bar not yet read (rule 2 needs `close[j-1]`) waits until it is (L2 - its position keeps its broker SL
+/ TP; placing waits, L7), then is judged at its own bar. **Any other
 fill of the setup's orders** (a fill of a placement already removed or superseded, a second fill of a name, a fill
 after the setup ended, a P2 without its P1 filled, a P2 after the break-even) is closed at market at once and logged
 - the bar boundary of L11 when it happened there, else a fault. After the first fill, rules 1 - 3 no longer apply;
@@ -426,8 +431,9 @@ when its last position has closed (its open volume is zero); **every order of th
   from `epoch` (L2). The first decision is at the first H1 open after the start (or after the flat book) - never in
   the middle of an hour - with no reservation: nothing of a previous process's rows (their reservation ends included)
   decides anything after a start.
-- **A failed broker read is never an empty account**: if the positions, orders, deals or history cannot be read, the
-  cycle does nothing that depends on them - no fill judged, no order placed, nothing marked gone - and retries.
+- **A failed broker read is never an empty account**: if the positions, orders, deals, history, account or terminal
+  cannot be read, the cycle does nothing that depends on them - no fill judged, no order placed, nothing marked gone,
+  no gate failure assumed - and retries; reads failing for longer than one `exec_tf` bar count as stale data (L7).
 
 ## L9. Settings
 
@@ -446,9 +452,10 @@ pinned at start. The runner's own settings - `lot` (0.01, owner), `cycle_seconds
   the runner's acknowledgement (else it says so and exits): the runner writes the acknowledgement once it has read the
   request and the broker confirms every unfilled order of the magic removed; it places nothing new; open positions are
   still managed (the BE, the exit, the leftover P2 removal) and the runner exits when none is open, or with `--now`
-  as soon as the removals are confirmed (the positions keep their broker SL / TP and are the owner's). An order
-  whose removal is not confirmed within 60 s is named in the log and in `zone stop`'s output before the runner
-  exits (it keeps its broker expiry).
+  as soon as the removals are confirmed (the positions keep their broker SL / TP and are the owner's). A removal not
+  confirmed: the runner keeps retrying and managing (without `--now` it never exits early); `zone stop` reports it
+  after its 60 s and exits itself; with `--now` the runner exits after 60 s, the order named in the log (it keeps its
+  broker expiry).
   Ctrl+C in the runner's window = `zone stop`; a second Ctrl+C = `--now`.
 
 ## L11. Acceptance - what a build must show
@@ -533,7 +540,7 @@ pinned at start. The runner's own settings - `lot` (0.01, owner), `cycle_seconds
 
 ## L12. Not in this build
 
-The web / PWA view, alerts outside the log, several symbols, sizing other than the fixed lot, DEMO runs (the owner: no
-DEMO), carrying a setup across a restart or managing (the break-even, closes) positions left at a restart or under
+The web / PWA view, alerts outside the log, several symbols, sizing other than the fixed lot, runs on DEMO (`zone run` accepts
+`TRADING_MODE=DEMO` - the code supports it - but this build is not tested there; the owner: no DEMO), carrying a setup across a restart or managing (the break-even, closes) positions left at a restart or under
 hands-off (the owner, 2026-11-04: out of our control - the broker's SL / TP). Turning LIVE on is the owner's: the two
 `.env` values, then the owner's word to start the runner (CLAUDE.md).

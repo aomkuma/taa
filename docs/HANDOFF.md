@@ -329,7 +329,13 @@ measured.
     reserved hour (no candidates, visits `busy`); zone stop's acknowledgement and exit; an earlier store cut to the
     simulation's first bars; **why a farther line has the nearer one's skip class - checked in `find_visits`
     (core.py ~470-510): the readings come from the H1 bar `i` and the side `sgn` only**; no missed touch in the
-    decision's bar; a lost connection counts as stale. All fixed; **Sol round 11 and Haiku under way.**
+    decision's bar; a lost connection counts as stale. All fixed.
+  - **Sol round 11: 2** - both Claude's own round-10 errors (a reserved hour's visits written all `busy`, though the
+    simulation tests momentum first; an unconfirmed removal letting an ordinary stop exit early). **Haiku: 8** (a
+    fill needing an unread bar waits; a failed account / terminal read is a failed read; visits after an
+    interruption undecided, an interrupted candidate never the hour's setup; the extension timing; DEMO accepted, not
+    tested). All fixed; **Sol round 12 and Haiku under way.** Counts since the rewrite - Sol 8, 5, 3, 1, 0, 1, 2, 0,
+    2, 1, 2; Haiku 64, 14, 9, 8, 5, 7, 6, 6, 8.
   - **A rule from today** (the owner: *"why didn't you push to fix the root cause?"*): CLAUDE.md "Fix the root, not the
     symptom" - two review findings of the same kind in different places -> stop patching, one rule, one function.
   - **The owner (2026-11-03): small findings are fixed too** (*"the small ones should all be cleared, and the spec
