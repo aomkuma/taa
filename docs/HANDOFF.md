@@ -34,7 +34,12 @@ trading run. Tests green means the code matches the spec, never "passed".
   PASS (46 / 46 visits, 7 / 7 setups matched in every field, no WARNING line); 2024-03 M15 and 2026-03 M15 poll passed
   before the fix and are not re-run. Claude re-ran: ruff, mypy, bandit clean; architecture 17, trader 59, handsoff 33,
   restart 16, history_check 37 passed. Track A's developer stopped on Opus's weekly limit (resets 2026-11-08 13:00).
-  **Next: Sol's code review of the whole runner against the spec**, then the full suite and the commit.
+  **Sol's code review (2026-11-04 23:10): 13 findings (5 P1), each reproduced on FakeMT5** - the normal case: a
+  market P2 before P1's fill, deal times without milliseconds, P2 given its own block, an original-SL exit recorded
+  as BE, M15 requiring an M5 file, the live path writing the stored bars; the safety net, three roots: placing checked
+  once per cycle not per send; the runner's view built from what it saw, not what it sent (manual exits with magic 0,
+  the owner's-hand fields, accepted tickets); timers cleared before their action (stale removal, the 3-tries cap,
+  `stop --now`). **A Sonnet developer is fixing them** (normal case first), then Sol again.
 - **`.env` (changed by Claude on the owner's word, 2026-11-04 18:22)**: `ENABLE_HIGH_RISK_PROFILE=false`,
   `ENABLE_LIVE_TRADING=true`, `LIVE_TRADING_CONFIRMATION=I-ACCEPT-LIVE-RISK-28941169` (`TRADING_MODE=LIVE`, `FBS-Real`) -
   **the LIVE gate is open**: anything of the system started now can trade LIVE. No strategy is enabled in
