@@ -146,7 +146,11 @@ setup and name exists.
   closed for it - L4's both-filled and missed-touch rules, F8's "never visited and its hour over" and F11 are not
   applied to it; F8's recorded states (dropped, interrupted and never chosen, the hour recorded as the other
   candidate's) and every other row are. Two candidates both filled while down, neither chosen before: both are kept
-  for their positions.
+  for their positions. **The reservation does not hang on the hour's choice**: every setup kept for its positions
+  reserves (L6, 5b) from the restart to the `close_time` of the bar of its last exit, chosen or not - no new setup
+  starts while any kept position is open (L7); two kept setups reserve to the later end. An entry the previous
+  process made but did not record before it died is, by its identity, made while down (F9's first read): it is kept
+  and reserves the same way.
 
 **Orders** - classified P1 before P2 (O4 reads the P1's class); the first row that holds gives the class:
 
@@ -318,7 +322,8 @@ setup's how is the first deal's.
 
 ## L6. The setup's end and the reservation (rule 5b) [Claude]
 
-- A setup ends at its outcome: `no fill`, `cancel`, or its exit (the last position closed). Only **the hour's setup**
+- A setup ends at its outcome: `no fill`, `cancel`, or its exit (the last position closed). Apart from a setup kept
+  for its positions at a restart (L3a, which reserves chosen or not), only **the hour's setup**
   (the first visited live candidate, L4) makes a reservation - also when its life ended (a cancel, a withdrawal) before
   its visit in the hour, as in the simulation, which simulates it from `j0`. A live candidate never visited makes none.
 - **The reservation** lasts to the **`close_time` of the `exec_tf` bar in which the end happened** (its open + the

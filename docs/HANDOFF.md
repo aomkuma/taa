@@ -216,6 +216,15 @@ measured.
     owner's restart rule (open positions managed to their end, a fill while down not re-judged). **Spec corrected**
     (an entry made while down chooses no hour, closes no rival; F8's "never visited" and F11 not applied to it; both
     filled while down -> both kept); Sol: "No findings". Next: Opus aligns the code, then Sol's code review 2.
+  - **12:10-12:20, 2026-11-04: Opus aligned the code** (`made_while_down`; no visit for a downtime entry; 49 ownership
+    tests; fixes4 passes unchanged) - **a second contradiction: fixes3
+    `test_a_filled_candidate_whose_chosen_flag_was_not_saved_keeps_its_position` asserts `chosen=True`**. Checking it,
+    Claude found a money risk: `_reserved` (trader.py ~2173) reserves only for a `chosen` setup - two setups kept for
+    their positions, neither chosen, would let a new setup start while their positions are open (against L7, L8).
+    **Spec: every setup kept for its positions reserves to its last exit's bar, chosen or not** (L3a, L6 noted);
+    **Claude's decision: the fixes3 assertion `chosen is True` becomes the reservation** (blocked while open and
+    through the last exit bar's `close_time`, equality included), the position and fill checks kept. Sol: "No
+    findings", the decision on the test right.
   - **A rule from today** (the owner: *"why didn't you push to fix the root cause?"*): CLAUDE.md "Fix the root, not the
     symptom" - two review findings of the same kind in different places -> stop patching, one rule, one function.
   - **The owner (2026-11-03): small findings are fixed too** (*"the small ones should all be cleared, and the spec
