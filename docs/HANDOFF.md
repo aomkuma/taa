@@ -29,19 +29,16 @@ trading run. Tests green means the code matches the spec, never "passed".
   history checks (the pinned server's store and its depth, L2) and the tests of hands-off's eight causes; A wires B in.
   **Track B done**: `app/zone/history_check.py` (`check_stored_history`, `check_overlap`; 37 tests pass) and
   `tests/unit/test_zone_handsoff_causes.py` (34 tests, skipped until track A's runner lands). Track A under way.
-- **The LIVE server's history (`FBS-Real`) is not fetched yet**: the owner's `.env` has `ENABLE_HIGH_RISK_PROFILE=true`
-  (the config refuses it with LIVE) and `ENABLE_LIVE_TRADING=false` (a LIVE connection, even read-only, needs it
-  true). The owner asked Claude to change them; Claude Code's permission check refused the edit - **the owner sets**
-  `ENABLE_HIGH_RISK_PROFILE=false`, `ENABLE_LIVE_TRADING=true`, `LIVE_TRADING_CONFIRMATION=I-ACCEPT-LIVE-RISK-28941169`;
-  then `python scripts/download_history.py --symbols XAUUSD --timeframes D1,H4,H1,M15 --days 1900` (read-only).
-- **The code** (`app/zone/`, `app/cli/zone.py`, `app/storage/models/zone.py`, migration `0044_zone_live.py`, the broker
-  additions, `tests/unit/test_zone_*.py`, `tests/zone_replay*.py`) is **uncommitted and built for the previous spec**
-  (the ownership classifier `app/zone/ownership.py`, the restart recovery). To bring it to the new spec most of the
-  ownership and restart code is deleted. A copy of `app/zone` and the zone tests from 2026-11-03 18:39 is in the
-  session scratchpad (`backup/`), not in the repo.
-- **Before a LIVE start**: the runner reads the stored bars **of the pinned server** (`data/history/<server>/XAUUSD`);
-  only `FBS-Demo` exists - the LIVE server's history must be fetched first, and must start no later than FBS-Demo's
-  (D1 2021-09-01, H4 2023-04-02, H1 / M15 2023-08-01, M5 2025-10-05). The zone set was built on FBS-Demo bars.
+- **`.env` (changed by Claude on the owner's word, 2026-11-04 18:22)**: `ENABLE_HIGH_RISK_PROFILE=false`,
+  `ENABLE_LIVE_TRADING=true`, `LIVE_TRADING_CONFIRMATION=I-ACCEPT-LIVE-RISK-28941169` (`TRADING_MODE=LIVE`, `FBS-Real`) -
+  **the LIVE gate is open**: anything of the system started now can trade LIVE. No strategy is enabled in
+  `config.yaml`; DEMO and the observer are off in Task Scheduler; the zone runner is not started (the owner's word).
+- **FBS-Real history fetched** (read-only, D1 / H4 / H1 / M15 from 2021-08-22; `data/history/FBS-Real/XAUUSD`, passes
+  `history_check`). Its bars differ from FBS-Demo's by under 0.40 USD on 99 % (up to 9 USD on news bars; measured,
+  `eye/BOT_RESEARCH.md`). **Asked the owner**: a simulation of the zone set on FBS-Real bars, to see what this does to
+  its setups.
+- **Before a LIVE start**: the runner reads the stored bars of the pinned server (`data/history/FBS-Real/XAUUSD`),
+  brought up to date from the broker at start (L2).
 - **The simulation** (built 2026-11-02, `eye/zone_bot.py`, set `XAUUSD/default@v26` in `data/bot_config.db`): October
   2023 - October 2026, 109 setups, +0.392 R a setup, 41 % TP, +1868.9 USD at 0.01 lot a position, drawdown -280.0;
   charts in `eye/research/zone/XAUUSD/default/`. **Still open (CLAUDE.md step 7)**: the owner judges the charts - does

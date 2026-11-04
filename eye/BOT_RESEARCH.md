@@ -1950,3 +1950,10 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
 - **The zone bot with the break-even** (`eye/zone_bot.py`, set `XAUUSD/default@v26` after `upgrade`; 2026-11-02):
   **109 setups, +0.392 R a setup, 41 % TP, +1868.9 USD, drawdown -280.0, 32 break-even exits** - the reference's
   numbers; charts regenerated. The owner's 23/07/26 BUY 4049 (-83.84 before) now exits BE at 4046.88, +0.90 USD.
+- **FBS-Real against FBS-Demo, XAUUSD (2026-11-04)** - the LIVE server's history fetched read-only
+  (`scripts/download_history.py`, D1 / H4 / H1 / M15 from 2021-08-22 to 2026-11-04; `data/history/FBS-Real/XAUUSD`;
+  `app/zone/history_check.py` passes it). Bars at the same open time compared (H1 19,243, M15 76,907): the bar's
+  largest OHLC difference is 0 on the median bar, under 0.30 USD on 95 % and under 0.40 USD on 99 % (H1 0.28 / 0.40,
+  M15 0.25 / 0.37); the largest 9.01 USD, on news bars (13:30 UTC, e.g. 2024-01-05, 2024-02-01). Identical bars by year
+  (H1): 2023 88 %, 2024 27 %, 2025 67 %, 2026 86 %. The zone set was built on FBS-Demo bars; what these differences do to
+  its 109 setups is not measured (a simulation on FBS-Real bars - the owner's word asked).
