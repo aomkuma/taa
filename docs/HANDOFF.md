@@ -49,14 +49,14 @@ trading run. Tests green means the code matches the spec, never "passed".
   PASS** (46 / 46 visits, 7 / 7 setups, 0 differences, no WARNING line). Four old assertions held the behaviour L5
   rule 3 and L7 forbid (P2's own block; P2 placed beside an unconfirmed market P1) - changed to the spec (Claude
   re-ran: trader 58, fixes7 6, fixes8 21 passed).
-  **Sol's code review 4 (2026-11-05 01:20): 7 findings (2 P1)**. Three were spec gaps, fixed in `eye/ZONE_LIVE.md`
-  (uncommitted, under Sol's review): the hour's first quote known only when the runner saw the hour change, else the H1
-  open (a late recovery opened a new 60 s); an unknown place found cancelled in the history is cause 7, not `moot`; how
-  the in-bar touch order is recognised in the visit records (WARNING, the traded row carries the setup id). The code
-  findings, by root: one exit classifier from the first exit deal (`how` came back a second time); the M5 start's
-  arming from H1 only, the start complete only after its whole bootstrap; `stop --now` behind an unacknowledged stop;
-  a failed forming-H1 read making the cycle not fresh. A Sonnet developer is on the code-only ones; the rest after the
-  spec review.
+  **Sol's code review 4 (2026-11-05 01:20): 7 findings (2 P1)**. Three were spec gaps, **fixed in `eye/ZONE_LIVE.md`,
+  Sol clean, committed (41b7aad)**: the hour's first quote = the later of the H1 open and the last pre-hour quote read
+  (a late recovery opened a new 60 s); a failed forming-H1 read not fresh; an unknown place found cancelled is cause
+  7, not `moot`; the in-bar touch order recognised in the visit records (WARNING, the traded row carries the setup id);
+  tick replay cycles through gaps over `stale_quote_seconds`. The code findings, by root, all with the Sonnet
+  developer: one exit classifier from the first exit deal (`how` came back a second time); the M5 start's arming from
+  H1 only, complete only after its whole bootstrap; `stop --now` behind an unacknowledged stop; one broker-read path
+  and the last pre-hour read; one "ticket known" function; the in-bar touch order. Then the replays and Sol again.
 - **`.env` (changed by Claude on the owner's word, 2026-11-04 18:22)**: `ENABLE_HIGH_RISK_PROFILE=false`,
   `ENABLE_LIVE_TRADING=true`, `LIVE_TRADING_CONFIRMATION=I-ACCEPT-LIVE-RISK-28941169` (`TRADING_MODE=LIVE`, `FBS-Real`) -
   **the LIVE gate is open**: anything of the system started now can trade LIVE. No strategy is enabled in
