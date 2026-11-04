@@ -30,7 +30,7 @@ history of those rules is `git log -- eye/ZONE_LIVE.md` before this rewrite.
 - **Cycle**: one pass of the runner, every `cycle_seconds` (L9): read the broker, judge, act.
 - **Candidate**: one side's line chosen at an H1 open (L4). It is **live** (it passed the skips and gets orders) or
   **skipped**; a live candidate whose P1 is refused before it is the hour's setup is no longer live - it is `dropped`,
-  and a later touch of it is treated as a skipped visit (it leaves the hour free). One `zone_live_setup` row per live candidate.
+  and a later touch of it is treated as a skipped visit (it leaves the hour free; its record is `undecided`). One `zone_live_setup` row per live candidate.
 - **The hour's setup**: the live candidate whose visit came first in the hour (L4). Only it reserves (L6). "Setup"
   alone means a live candidate, before or after its visit.
 - **Outcomes** (a setup's end; `dropped` for the other candidate's visit becomes final only at the hour's close, L4), named as the simulation names them (`app/zone/core.py` `Setup.outcome`, `Setup.how`):
@@ -132,7 +132,8 @@ history of those rules is `git log -- eye/ZONE_LIVE.md` before this rewrite.
 - **Fresh data** (for placing only): the quote is younger than `stale_quote_seconds`, and every frame's last closed
   bar equals the broker's last closed bar of that frame. While the market is closed (the weekend, the daily break)
   nothing is placed and nothing is stale-removed (L7); the first cycle after the reopening judges freshness anew. A
-  failed read of the quote or of the bars counts as not fresh.
+  failed read of anything from the broker (the quote, the bars, the account, the terminal, the orders, positions,
+  deals or history) makes the data not fresh at once (L8).
   **The hour's decision** (L4) is made at the first cycle within the first 60 seconds of the H1 bar at which placing
   is allowed (L7: the data fresh, the gate passing, the kill switch off, the terminal connected, nothing pending) and
   the close steps of the H1 bar just closed (its visits, its arming, the bar closes of its `exec_tf` bars) are done;
@@ -199,13 +200,14 @@ hour's open. In real time, orders must rest from `j0`:
     that are disarmed are passed over. Only these two can be the first visit of the hour on their side (to reach a
     farther line price crosses the nearer one first). **A farther line of a side has the nearer one's skip class**:
     the readings 5a, 5c and 5d (the visit's `mom_body`, `mom_median`, `mom_run`, `ema_dist`, `atr`, `share` -
-    `find_visits` in `app/zone/core.py`, from the H1 bar `i` and the side `sgn`; `mom_run` is compared with the
+    `find_visits` in `app/zone/core.py`, computed at the H1 bar `i` from the bars closed before it, and the side
+    `sgn`; `mom_run` is compared with the
     grid's step) depend only on the hour and the side, never on the line, and 5b on the hour - so when the
     nearest armed line is skipped, every farther line of that side is skipped too, and the side has no setup that
     hour.
   - **The skips at the open**: when the hour is reserved (L6), the hour has no candidates (no rows, no orders); its
     visits are classified at the H1 close in the simulation's order like any other (`momentum` when 5a applies, else
-    `busy`). Else each
+    `busy`) - whether or not a decision cycle came (a reserved hour needs no decision). Else each
     candidate is read with the visit readings of the simulation for a visit at this hour and side (5a momentum, 5c
     abnormal, 5d the state - all from bars closed before the hour); a candidate that passes is **live** (a new row,
     its placements from `n` = 0) and gets its orders (L3) as L5 allows - a P1 blocked at `j0` (L5 rule 3) gets its
@@ -250,7 +252,8 @@ hour's open. In real time, orders must rest from `j0`:
   farther ones too - and classifies each in the simulation's order: `momentum` (5a), `busy` (5b), `abnormal` (5c),
   `trend` (5d, the state), else the hour's setup; in an hour the runner did not decide (placing not allowed through its first
   60 s, L2; started mid-hour; hands-off) every visit is recorded `undecided`, and in a decided hour every visit after
-  an interruption (L7) or hands-off began in it (no fault; excluded from the parity check). A row
+  an interruption (L7) or hands-off began in it is recorded `undecided` too (no fault; excluded from the parity
+  check). A row
   per visit; a disagreement with what the runner did in a decided hour is logged at WARNING when it is one of L11's
   explained differences (the in-bar touch order, a missed touch, the bar boundary), else as a fault.
 - **The arming** is updated at each H1 close from that closed bar - **after** that bar's visits are computed, which use
@@ -300,8 +303,11 @@ life allows at its bar - P1 when rules 1 - 3 allow it, P2 once P1 has filled and
 judging needs a bar not yet read (rule 2 needs `close[j-1]`) waits until it is (L2 - its position keeps its broker SL
 / TP; placing waits, L7), then is judged at its own bar. **Any other
 fill of the setup's orders** (a fill of a placement already removed or superseded, a second fill of a name, a fill
-after the setup ended, a P2 without its P1 filled, a P2 after the break-even) is closed at market at once and logged
-- the bar boundary of L11 when it happened there, else a fault. After the first fill, rules 1 - 3 no longer apply;
+after the setup ended, a fill the rules of its bar forbid once that bar is read - a P1 in a blocked or withdrawn bar,
+a P2 without its P1 filled, a P2 after the break-even) is closed at market at once and logged
+- the bar boundary of L11 when it happened there, else a fault. Such a position is not part of the setup: the setup
+keeps its own outcome (`no fill`, `cancel`, or its exit), its close is not the setup's exit, and the reservation is
+the setup's own (L6). After the first fill, rules 1 - 3 no longer apply;
 the unfilled P2 rests until the break-even or the end (removed by L7 meanwhile, it is placed again once L7 clears, as
 the next placement).
 
@@ -358,9 +364,10 @@ when its last position has closed (its open volume is zero); **every order of th
   not fresh (L2), a close the runner owes is not done (L8), an order of the magic that is not wanted still rests
   (its removal not yet confirmed), or **any condition is pending that L8 turns into hands-off after one `exec_tf`
   bar** (causes 1, 2, 3 and 6: a place of unknown outcome, an order or a position of ours gone unexplained, a removal,
-  a close or a market entry not yet done) - each may still become exposure. Managing goes on.
-- **Resting orders are removed** (every unfilled order of the magic, no expiry extended) when the kill switch is on,
-  when the gate fails, and when the data has been stale - a lost connection included, the removals sent once it is
+  a close or a market entry not yet done) - each may still become exposure; and from a `zone stop` request on (L10).
+  Managing goes on.
+- **Resting orders are removed** (every unfilled order of the magic, no expiry extended) at once when the kill switch
+  is on or the gate fails, and when the data has been stale - a lost connection included, the removals sent once it is
   back - for longer than one `exec_tf` bar while the market is open
   (the rules of L5 can no longer be judged; timed from the first stale cycle). A setup with a fill keeps its positions managed; a setup without a fill
   **ends `interrupted`** (no reservation); the next decision is at the next H1 open once all is clear (L2).

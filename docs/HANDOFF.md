@@ -336,6 +336,11 @@ measured.
     interruption undecided, an interrupted candidate never the hour's setup; the extension timing; DEMO accepted, not
     tested). All fixed; **Sol round 12 and Haiku under way.** Counts since the rewrite - Sol 8, 5, 3, 1, 0, 1, 2, 0,
     2, 1, 2; Haiku 64, 14, 9, 8, 5, 7, 6, 6, 8.
+  - **Sol round 12: 1** (a failed read's timer could double the grace - one bar now, placing stops at once).
+    **Haiku: 8** (a stray fill is not part of its setup - the setup keeps its outcome, exit and reservation; removal
+    at once on the kill switch / gate; visits after an interruption `undecided`; a reserved hour classified without a
+    decision; readings from bars before `i`; every failed broker read makes data not fresh; a stop request stops
+    placing). All fixed; **Sol round 13 and Haiku under way.**
   - **A rule from today** (the owner: *"why didn't you push to fix the root cause?"*): CLAUDE.md "Fix the root, not the
     symptom" - two review findings of the same kind in different places -> stop patching, one rule, one function.
   - **The owner (2026-11-03): small findings are fixed too** (*"the small ones should all be cleared, and the spec
