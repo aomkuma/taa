@@ -30,10 +30,11 @@ trading run. Tests green means the code matches the spec, never "passed".
   **Track B done**: `app/zone/history_check.py` and `tests/unit/test_zone_handsoff_causes.py`. **Track A done**
   (uncommitted): `app/zone/ownership.py` and the restart recovery deleted; the normal case kept; hands-off's eight
   causes detected; ruff, mypy, bandit, architecture clean; every zone test file passes one at a time (handsoff 33).
-  **Replay**: 2024-03 M15 and 2026-03 M15 pass in both modes (2026-03: 46 / 46 visits, 7 / 7 setups); 2026-03 M5 one
-  difference - **a spec fault**: "decide in the H1 bar's first 60 s" left every daily-reopen hour undecided (the first
-  quote comes at about :05). The spec now counts the 60 s from the hour's first quote (Sol: no findings); the runner
-  is to follow, then the M5 replay again, then Sol's code review.
+  **Replay after the decision-window fix (the hour's first quote)**: 2026-03 M5 tick and poll, 2026-03 M15 tick - all
+  PASS (46 / 46 visits, 7 / 7 setups matched in every field, no WARNING line); 2024-03 M15 and 2026-03 M15 poll passed
+  before the fix and are not re-run. Claude re-ran: ruff, mypy, bandit clean; architecture 17, trader 59, handsoff 33,
+  restart 16, history_check 37 passed. Track A's developer stopped on Opus's weekly limit (resets 2026-11-08 13:00).
+  **Next: Sol's code review of the whole runner against the spec**, then the full suite and the commit.
 - **`.env` (changed by Claude on the owner's word, 2026-11-04 18:22)**: `ENABLE_HIGH_RISK_PROFILE=false`,
   `ENABLE_LIVE_TRADING=true`, `LIVE_TRADING_CONFIRMATION=I-ACCEPT-LIVE-RISK-28941169` (`TRADING_MODE=LIVE`, `FBS-Real`) -
   **the LIVE gate is open**: anything of the system started now can trade LIVE. No strategy is enabled in
