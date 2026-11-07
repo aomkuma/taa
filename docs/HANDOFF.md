@@ -68,9 +68,12 @@ trading run. Tests green means the code matches the spec, never "passed".
   explanation (a pending P1 forgotten when its position vanished; the stale timer cleared before a later read
   failed) - the third time this question came, so one L8 rule "a pending condition ends only when it is explained";
   hands-off's removals held back by an error in another step - L8 rule "safety first in each cycle" (both rules
-  under Sol's review); a quote's touch of a blocked P1 forgotten; the visit outcome of an in-bar touch-order row. A
-  Sonnet developer is fixing all five (Opus's limit resets 2026-11-08 13:00). Then Sol's code review 6, then the
-  replay (tick and poll), the full suite, the commit.
+  reviewed clean, 3c48640); a quote's touch of a blocked P1 forgotten; the visit outcome of an in-bar touch-order row.
+  **All five fixed** (Sonnet; `tests/unit/test_zone_review_fixes10.py`, 10 tests, each failing with its fix reverted;
+  every zone test file passes one at a time). The pending entry is timed from its position's sighting (an L8 sentence,
+  uncommitted, reviewed with the code). Claude re-ran: ruff, mypy, bandit clean; architecture 17, fixes10 10, fixes9
+  27, trader 58, handsoff 33. **Now**: Sol's code review 6 and, beside it, the 2026-03 M15 tick replay; then the poll
+  mode, the full suite, the commit.
 - **`.env` (changed by Claude on the owner's word, 2026-11-04 18:22)**: `ENABLE_HIGH_RISK_PROFILE=false`,
   `ENABLE_LIVE_TRADING=true`, `LIVE_TRADING_CONFIRMATION=I-ACCEPT-LIVE-RISK-28941169` (`TRADING_MODE=LIVE`, `FBS-Real`) -
   **the LIVE gate is open**: anything of the system started now can trade LIVE. No strategy is enabled in
