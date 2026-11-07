@@ -531,8 +531,10 @@ pinned at start. The runner's own settings - `lot` (0.01, owner), `cycle_seconds
      live runner keeps cycling (L2's last pre-hour read) -, and every `cycle_seconds` of replay time.
    - The runner runs on it unchanged (its clock and broker injected; the replay broker reports the server `FBS-Demo`,
      and the runner's store is the simulation's stored bars **cut at the replay's start**, so L2's start checks and
-     freshness hold as on a live start; the replay starts a few seconds before an H1 open), on 2024-03 and 2026-03 with `exec_tf` M15, and on
-     2026-03 with `exec_tf` M5.
+     freshness hold as on a live start; the replay starts a few seconds before an H1 open), on **one month, 2026-03,
+     with the set's `exec_tf` (M15)** (the owner, 2026-11-07: *"run the replay on one month and compare it with the
+     earlier result; if one month matches, assume it matches"*); before the set is switched to another `exec_tf`, that
+     frame is replayed on the same month.
    - **Both ways**, from the runner's first decided hour on (an uninterrupted replay has no undecided hour after it;
      one that has any fails): every simulated visit - every line `find_visits` returns, farther lines included - has
      its runner record with the same classification (`momentum`, `busy`, `abnormal`, `trend`, or the setup's outcome), and every
