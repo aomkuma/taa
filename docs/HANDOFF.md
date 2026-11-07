@@ -57,6 +57,11 @@ trading run. Tests green means the code matches the spec, never "passed".
   developer: one exit classifier from the first exit deal (`how` came back a second time); the M5 start's arming from
   H1 only, complete only after its whole bootstrap; `stop --now` behind an unacknowledged stop; one broker-read path
   and the last pre-hour read; one "ticket known" function; the in-bar touch order. Then the replays and Sol again.
+  **Replay after these fixes (2026-11-05)**: 2026-03 M15 tick PASS (46 / 46 visits, 7 / 7 setups, no WARNING); M5 tick
+  FAILED on one row - the span's first hour, 2026-03-01 23:00 (the weekly reopening), `undecided` for the runner
+  against the simulation's `abnormal`: the replay starts with no pre-hour quote read, so L2's window counts from the H1
+  open (the spec's rule; the live runner cycles through the weekend). The fix is in the replay harness (the last tick
+  before the span served, the runner cycling from before the first hour) - with the developer, then both replays again.
 - **`.env` (changed by Claude on the owner's word, 2026-11-04 18:22)**: `ENABLE_HIGH_RISK_PROFILE=false`,
   `ENABLE_LIVE_TRADING=true`, `LIVE_TRADING_CONFIRMATION=I-ACCEPT-LIVE-RISK-28941169` (`TRADING_MODE=LIVE`, `FBS-Real`) -
   **the LIVE gate is open**: anything of the system started now can trade LIVE. No strategy is enabled in
