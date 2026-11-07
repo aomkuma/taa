@@ -138,6 +138,10 @@ looks small.
 - **Documents hold only what is used** (owner, 2026-11-04: *"documents should hold only what is used, not every
   history"*). A spec states the rules in force; HANDOFF the current state and what to do next. Review rounds, counts and
   how a rule came to be stay in `git log` and the commit messages, never in the document.
+- **Think the plan through myself** (owner, 2026-11-07: *"be sharper - I should not have to keep reminding you"*).
+  Before announcing next steps, check them: the order (the review before the tests; a run whose result a coming
+  review may throw away goes last), what can run side by side (a read-only review beside a long run), the scope (only
+  the month and frame that will trade), and any stalled agent or stale process - at once, unasked.
 - **Ask before:** git push, any deploy, starting DEMO or LIVE, anything touching the owner's accounts, and
   any change to risk. Committing per step by explicit paths is fine without asking.
 
