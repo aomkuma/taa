@@ -141,7 +141,10 @@ looks small.
   too - a review goes on until it finds nothing.
 - **Documents hold only what is used** (owner, 2026-11-04: *"documents should hold only what is used, not every
   history"*). A spec states the rules in force; HANDOFF the current state and what to do next. Review rounds, counts and
-  how a rule came to be stay in `git log` and the commit messages, never in the document.
+  how a rule came to be stay in `git log` and the commit messages, never in the document. **Before adding to a
+  document** (this file included), read it whole and check the addition against it (owner, 2026-11-07): already
+  there -> merge into the existing line; agreeing with it -> fine; contradicting it -> settle which holds (the later
+  word of the owner; else ask) and fix the other line in the same change.
 - **Think the plan through myself** (owner, 2026-11-07: *"be sharper - I should not have to keep reminding you"*).
   Before announcing next steps, check them: the order (the review before the tests; a run whose result a coming
   review may throw away goes last), what can run side by side (a read-only review beside a long run), the scope (only
