@@ -12,6 +12,8 @@ Guidance for Claude Code (claude.ai/code) working in this repository.
 - **`eye/BOT_RULES.md`** - the bot's rules in force (build from this). **`eye/BOT_SPEC.md`** (how each rule
   came to be) and **`eye/BOT_RESEARCH.md`** - the bot's history, and every
   research run on it with its result (`eye/research/<variant>/` holds each run's ledger and log).
+- **`eye/ZONE_RULES.md`** (the run-zone setup) and **`eye/ZONE_LIVE.md`** (its runner for LIVE) - the work now
+  (HANDOFF section 1).
 - **`eye/METHOD.md`**, **`eye/TRIED.md`**, **`eye/LESSONS.md`** - the live work: trading gold by eye, what
   has been tried and whether it worked, and what the ledger supports.
 
@@ -33,8 +35,9 @@ knowledge base and the working method - keeping the raw data and the indicator p
 together again.
 
 So the code still builds and its tests pass, but **no strategy is enabled in `config.yaml`, in any lane.**
-A started engine sends no order. DEMO and the hourly observer are disabled in Task Scheduler. LIVE stays
-off and needs Phase 14 and an explicit word.
+A started engine sends no order. DEMO and the hourly observer are disabled in Task Scheduler. The LIVE gate
+in `.env` is open (set on the owner's word, 2026-11-04, for the zone runner - HANDOFF); nothing is started on LIVE
+without the owner's explicit word.
 
 ## Commands (Windows, from the repo root, always the venv)
 
@@ -77,20 +80,21 @@ owner added **their Fibonacci** (METHOD 2e, "The owner's Fibonacci"). **A questi
 example, is supporting information, never a rule; the documents record only the rules and what to do.**
 
 **Nothing is committed without `ruff`, `mypy`, `bandit` and the tests green**, and nothing is pushed,
-deployed, started on DEMO or LIVE, or pointed at the owner's accounts without asking first. Committing per
-step by explicit paths is fine without asking.
+deployed, started on DEMO or LIVE, pointed at the owner's accounts, or changed in risk without asking first.
+Committing per step by explicit paths is fine without asking.
 
 ## How the system is developed (the owner, 2026-10-29) - every change, in this order
 
 1. **Discuss** with the owner, and **conclude** - what was decided, in the owner's words where they are
    the owner's.
-2. **Record** it in the documents (rules and what to do only - no questions): METHOD 2e for the owner's
-   rules, `eye/BOT_RULES.md` for the bot's rules (with a note in `eye/BOT_SPEC.md`, its history),
-   `docs/HANDOFF.md` for the state.
+2. **Record** it in the documents (rules and what to do only - no questions, no history): METHOD 2e for the
+   owner's rules, the bot's spec for its rules (`eye/BOT_RULES.md`; the zone bot `eye/ZONE_RULES.md`, its runner
+   `eye/ZONE_LIVE.md`), `docs/HANDOFF.md` for the state; how a rule came to be goes in the commit message.
 3. **An agent reviews the documents** (Codex, read-only) - ambiguities, contradictions with the owner's
    rules, attributions, acceptance cases checked against the stored bars. Fix the documents; review again
-   if the fixes were not small.
-4. **Another agent writes the code** (a Sonnet developer) from the reviewed spec only - no bot or research
+   until a review finds nothing.
+4. **Another agent writes the code** (a developer agent: Opus for the zone runner when available, the owner
+   2026-11-03, else Sonnet) from the reviewed spec only - no bot or research
    run, gates green (ruff, mypy, the bot's tests).
 5. **Another agent reviews the code** against the spec (Codex, read-only). **Every fix after a review goes
    back to review** until a review finds nothing.
@@ -122,13 +126,11 @@ looks small.
 - **Write the expectation before the reveal.** Every time that was skipped, the explanation arrived after
   the number and fitted it too well.
 - **An abnormal count stops the report** until it is explained - a zero, an empty file, a rate that will
-  not move.
+  not move, a round, repeated or impossible value; look before reporting, never invent an explanation.
 - **When I am wrong, correct the record, not just the sentence.** The file that carries the wrong number
   is the thing that misleads the next session.
 - **Report what the measurement says even when it contradicts me**, and say which part is measured and
   which part is my reading.
-- **The archive is old data.** Nothing in `docs/archive/`, `research/archive/` or any `archive` folder
-  decides the present - not a number, a verdict, a rule or a lesson (owner, 2026-10-28).
 - **Fix the root, not the symptom** (owner, 2026-11-03). After every review, group the findings by the question
   they ask; two of the same kind in different places -> stop patching, write the one rule in the spec, build it as
   one function used everywhere, and tell the owner. Passing findings on one at a time cost a whole day on the zone runner.
@@ -144,8 +146,6 @@ looks small.
   Before announcing next steps, check them: the order (the review before the tests; a run whose result a coming
   review may throw away goes last), what can run side by side (a read-only review beside a long run), the scope (only
   the month and frame that will trade), and any stalled agent or stale process - at once, unasked.
-- **Ask before:** git push, any deploy, starting DEMO or LIVE, anything touching the owner's accounts, and
-  any change to risk. Committing per step by explicit paths is fine without asking.
 - **An instruction the owner gives goes here at once**, not only into memory (owner, 2026-11-07: *"you still had to be
   told"*). Memory is this machine's only and its files are read only when recalled; CLAUDE.md is read whole every
   session.
@@ -153,8 +153,7 @@ looks small.
 ## The owner's standing instructions (each was given after a real mistake)
 
 - **Numbers** (2026-10-15, 10-19): cross-check every number a second way (a net against the sum of its trades, a count
-  against the summary; recompute a metric a second way and re-derive sample trades from the ticks); stop at a round,
-  repeated or impossible value and look before reporting; never invent an explanation for an anomaly.
+  against the summary; recompute a metric a second way and re-derive sample trades from the ticks).
 - **Answer from the real candles** (2026-10-19): never make up a number or data; every claim about price comes with its
   candles (dates, Thai times) drawn, every number from a run with its script and output file named.
 - **Pooled numbers are not believed** (2026-11-01): for any new form of the owner's method, draw single trades first
@@ -174,8 +173,8 @@ looks small.
   only the owner's own reading is theirs to state.
 - **Skip means skip** (2026-10-11): a topic the owner parks stays out of reports and questions until they raise it.
 - **Codes get a Thai name** in every Thai message, the first time each appears (2026-10-21).
-- **Agents** (2026-10-30): Claude coordinates and checks every result itself; a Sonnet developer builds piece by
-  piece; Codex reviews read-only with **`-m gpt-6.1-sol`** (2026-11-01; `codex.exe exec -m gpt-6.1-sol --sandbox
+- **Agents** (2026-10-30): Claude coordinates and checks every result itself; the developer agent (step 4) builds
+  piece by piece; Codex reviews read-only with **`-m gpt-6.1-sol`** (2026-11-01; `codex.exe exec -m gpt-6.1-sol --sandbox
   read-only -`, prompt on stdin). Before reporting what an agent is doing, read the process command lines
   (`Get-CimInstance Win32_Process`) and the mtimes of its files - agents stop silently after a freeze or a shutdown
   (2026-11-03). Never run a mutation check on a file an agent is editing or reviewing.
@@ -186,10 +185,6 @@ looks small.
 
 - Chat in **Thai**. Documents, code and comments in **English**. Times to the owner in **Thai time**, read
   with PowerShell `Get-Date` (Git Bash `date` is wrong on this machine).
-- **Record every trade and every decision when it happens**, in the file that holds them - never only in
-  conversation.
-- Report what the measurement says, including when it contradicts what was said before. A conclusion drawn
-  from a handful of samples has been wrong three times out of three here.
 - The owner's goal is fixed: **at least +0.15 R a trade after costs**. The method is theirs to direct.
 
 ## Architecture, while the code exists
