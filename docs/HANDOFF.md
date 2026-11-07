@@ -84,8 +84,9 @@ trading run. Tests green means the code matches the spec, never "passed".
   last restructure. By root: the pending entry still not one per-setup registry (a global barrier held another
   setup's BE; the stop exit missed a history-only pending fill) - the third time; the cycle's conditions computed twice
   (stale removal while the market is closed, a failed terminal read still placing, the stop acknowledgement behind the
-  history read); and, on LIVE, the decision before the last exec bar closed at the H1 open is published. The Sonnet
-  developer is fixing them (`test_zone_review_fixes12.py`). The machine slept 15:44 - 00:12 (the lid, then the
+  history read); and, on LIVE, the decision before the last exec bar closed at the H1 open is published. **An Opus
+  developer is fixing them** (`test_zone_review_fixes12.py`; the owner, 2026-11-08: complex work is Opus's - the
+  Sonnet developer was stopped before it changed anything). The machine slept 15:44 - 00:12 (the lid, then the
   battery): long runs need it awake and on power.
 - **`.env` (changed by Claude on the owner's word, 2026-11-04 18:22)**: `ENABLE_HIGH_RISK_PROFILE=false`,
   `ENABLE_LIVE_TRADING=true`, `LIVE_TRADING_CONFIRMATION=I-ACCEPT-LIVE-RISK-28941169` (`TRADING_MODE=LIVE`, `FBS-Real`) -

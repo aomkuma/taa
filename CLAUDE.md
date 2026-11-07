@@ -92,8 +92,10 @@ Committing per step by explicit paths is fine without asking.
 3. **An agent reviews the documents** (Codex, read-only) - ambiguities, contradictions with the owner's
    rules, attributions, acceptance cases checked against the stored bars. Fix the documents; review again
    until a review finds nothing.
-4. **Another agent writes the code** (a developer agent: Opus for the zone runner when available, the owner
-   2026-11-03, else Sonnet) from the reviewed spec only - no bot or research
+4. **Another agent writes the code** (a developer agent: **complex work - the zone runner, a fix
+   across the runner - is written by Opus**, never handed to Sonnet because Opus is busy or at its limit - wait for Opus
+   and say so; Sonnet only for small, separate pieces such as new files or tests; the owner 2026-11-03, again
+   2026-11-08) from the reviewed spec only - no bot or research
    run, gates green (ruff, mypy, the bot's tests).
 5. **Another agent reviews the code** against the spec (Codex, read-only). **Every fix after a review goes
    back to review** until a review finds nothing.
