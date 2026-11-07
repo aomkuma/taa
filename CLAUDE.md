@@ -95,7 +95,9 @@ step by explicit paths is fine without asking.
 5. **Another agent reviews the code** against the spec (Codex, read-only). **Every fix after a review goes
    back to review** until a review finds nothing.
 6. **Run the tests**: the full suite, then commit by explicit paths. Tests green means **the code does what
-   the spec says** - never "passed" (the owner, 2026-10-30).
+   the spec says** - never "passed" (the owner, 2026-10-30). The full suite runs **once, at the end of the whole
+   job** - never between pieces; while building, only the targeted test files, one at a time (the owner,
+   2026-11-01 / 11-02, told twice; routine engineering choices are mine, not questions for the owner).
 7. **Check the reading against the market** (the owner, 2026-10-30: *"passing is the bot reading the chart as
    close to the market as possible"*): every reading a change touches (the H1 state, the M5 trend, the leg...) is
    run on its own, **without trading**, on the stored bars of **several months**, drawn over the candles (the
@@ -144,6 +146,41 @@ looks small.
   the month and frame that will trade), and any stalled agent or stale process - at once, unasked.
 - **Ask before:** git push, any deploy, starting DEMO or LIVE, anything touching the owner's accounts, and
   any change to risk. Committing per step by explicit paths is fine without asking.
+- **An instruction the owner gives goes here at once**, not only into memory (owner, 2026-11-07: *"you still had to be
+  told"*). Memory is this machine's only and its files are read only when recalled; CLAUDE.md is read whole every
+  session.
+
+## The owner's standing instructions (each was given after a real mistake)
+
+- **Numbers** (2026-10-15, 10-19): cross-check every number a second way (a net against the sum of its trades, a count
+  against the summary; recompute a metric a second way and re-derive sample trades from the ticks); stop at a round,
+  repeated or impossible value and look before reporting; never invent an explanation for an anomaly.
+- **Answer from the real candles** (2026-10-19): never make up a number or data; every claim about price comes with its
+  candles (dates, Thai times) drawn, every number from a run with its script and output file named.
+- **Pooled numbers are not believed** (2026-11-01): for any new form of the owner's method, draw single trades first
+  (losers first, one image at a time) and ask what the owner sees; in every simulation assert a stop exit has R < 0.
+- **Costs are the spread only** (2026-10-20): a buy fills at the ask, a sell at the bid; slippage is a parameter at 0.
+- **Gold pip = 1.00 USD of price** (2026-10-17); at 0.01 lot about 1 USD. The owner's targets: at least 5 pips; the
+  largest timeframe H1.
+- **The risk per trade is the owner's choice** (2026-10-17): never list it as a concern; judge setups by R per trade,
+  consistency and drawdown in R.
+- **Direction rates are ~50 % by nature** (2026-10-29/30): never report one as a finding; find which conditions put a
+  signal on the winning side, and judge by R per trade.
+- **Audit the core readings first** (2026-10-29): when results are thin or odd, measure the side and the levels the bot
+  reads against the market's own movement before tuning anything.
+- **Before designing**, list the owner's standing instructions the design touches and what each forces it to be.
+- **Ask, don't guess** (2026-10-09): restate my reading in one line and ask when the owner's meaning is unclear,
+  especially a trading idea. **General concepts** (a range, ZigZag) I research from outside sources first (2026-10-30);
+  only the owner's own reading is theirs to state.
+- **Skip means skip** (2026-10-11): a topic the owner parks stays out of reports and questions until they raise it.
+- **Codes get a Thai name** in every Thai message, the first time each appears (2026-10-21).
+- **Agents** (2026-10-30): Claude coordinates and checks every result itself; a Sonnet developer builds piece by
+  piece; Codex reviews read-only with **`-m gpt-6.1-sol`** (2026-11-01; `codex.exe exec -m gpt-6.1-sol --sandbox
+  read-only -`, prompt on stdin). Before reporting what an agent is doing, read the process command lines
+  (`Get-CimInstance Win32_Process`) and the mtimes of its files - agents stop silently after a freeze or a shutdown
+  (2026-11-03). Never run a mutation check on a file an agent is editing or reviewing.
+- **"Not available" needs evidence**: check services, ports, PATH and the sibling projects before saying a tool is
+  missing.
 
 ## Working with the owner
 
