@@ -473,6 +473,22 @@ when its last position has closed (its open volume is zero); **every order of th
   request of the run is closed (`unknown` ones `moot`), its keys are no longer ours (anything of them that appears
   later is "not ours" - cause 4), and the runner starts anew: the first decision at the first H1 open after it (L4),
   with no reservation.
+- **A broker condition ends only when it is explained** [Claude]: the conditions L8 times toward hands-off from the
+  broker's state - a place of unknown outcome, an order or a position of ours not yet explained (gone, or filled /
+  open without its entry deal), the stale data - end only when the state that explains them is read: the deal, the
+  history state, a cycle whose every read succeeded and was fresh. The disappearance of what such a condition watches
+  never ends it: an order or a position gone without its explanation stays under cause 2 or 3, timed from that
+  condition's own start. A **request** (remove, modify, close, market entry) is done or `moot` exactly as above (a
+  target that no longer exists ends the request); what that disappearance leaves unexplained - a position gone
+  without its exit deal, an order gone without its history state - is a condition of its own under cause 2 or 3, timed
+  from the disappearance. A timer is never restarted by another condition beginning or ending. The runner's own
+  conditions keep their own ends (the kill switch off, the gate passing, a `zone stop` - L7, L10).
+- **Safety first in each cycle** [Claude]: the stop deadline (L10) is checked at the very start of every cycle,
+  before any broker read and whatever the reads give. The removals owed (hands-off, a stop, the kill switch, a failed
+  gate, the stale data, an order already judged not wanted in an earlier cycle) are sent right after the read they
+  need (the open orders; a failed read -> next cycle), before and apart from every other step (the removals this
+  cycle's own steps find come after them); an error in another step (the bars, the arming, the visits, the decision)
+  never holds them back (it is cause 8 for that cycle, logged).
 - **The start** (every `zone run`, the first one and every restart): the broker's orders, positions and deals are read
   (a failed read is never an empty account: nothing is decided until a read succeeds); deals and history are read
   from the process's start on. Every unfinished row of the
