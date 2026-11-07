@@ -72,8 +72,14 @@ trading run. Tests green means the code matches the spec, never "passed".
   **All five fixed** (Sonnet; `tests/unit/test_zone_review_fixes10.py`, 10 tests, each failing with its fix reverted;
   every zone test file passes one at a time). The pending entry is timed from its position's sighting (an L8 sentence,
   uncommitted, reviewed with the code). Claude re-ran: ruff, mypy, bandit clean; architecture 17, fixes10 10, fixes9
-  27, trader 58, handsoff 33. **Now**: Sol's code review 6 and, beside it, the 2026-03 M15 tick replay; then the poll
-  mode, the full suite, the commit.
+  27, trader 58, handsoff 33.
+  **Sol's code review 6 (2026-11-07): 4 findings (2 P1)** - both roots back a second time, so each is one mechanism:
+  the pending entry is a barrier on the whole setup (a stop, rule 3's latch, the close steps and the end wait until the
+  entry is read; hands-off does not wait; an ordinary stop exits only with no entry pending); a fixed cycle skeleton
+  (the stop deadline from memory before any store or broker read, then the account and orders, then the removals owed,
+  then the rest); the `--now` timeout exit leaves the stop unacknowledged. The spec for them reviewed clean and
+  committed. A Sonnet developer is building them (`tests/unit/test_zone_review_fixes11.py`); then Sol's code review 7,
+  with the 2026-03 M15 tick replay beside it, then the poll mode, the full suite, the commit.
 - **`.env` (changed by Claude on the owner's word, 2026-11-04 18:22)**: `ENABLE_HIGH_RISK_PROFILE=false`,
   `ENABLE_LIVE_TRADING=true`, `LIVE_TRADING_CONFIRMATION=I-ACCEPT-LIVE-RISK-28941169` (`TRADING_MODE=LIVE`, `FBS-Real`) -
   **the LIVE gate is open**: anything of the system started now can trade LIVE. No strategy is enabled in

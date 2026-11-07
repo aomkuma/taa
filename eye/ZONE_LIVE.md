@@ -328,7 +328,11 @@ or a filled order of ours seen whose entry deal is not yet read): the buffered d
 once it is read (placing stops meanwhile, L7; hands-off after one `exec_tf` bar, L8). **The setup's whole bar loop
 waits with them**: its close steps (rules 1 - 3, the break-even, its exits) for the pending entry's bar and every later
 bar run only once the entry is read, then bar by bar in order - so a break-even never counts fills it has not seen.
-Removals for safety (L7, L8) do not wait. **The setup's fills** are, in that order: the first fill of each name that the
+**Every other judgement of the setup waits too** - its interruption (L7, a `zone stop`, L10), a touch latched by
+rule 3, its end - until the entry is read; the wait holds while the condition is unexplained, also when the position
+disappears (L8: a broker condition ends only when it is explained). Removals for safety (L7, L8) do not wait, and
+**hands-off does not wait**: it ends every setup not ended `hands-off` at once (L8), and nothing of the setup is judged
+or acted on again - its buffered deals are recorded only (no fill judged, no close at market). **The setup's fills** are, in that order: the first fill of each name that the
 life allows at its bar - P1 when rules 1 - 3 allow it, P2 once P1 has filled and before the break-even. A fill whose
 judging needs a bar not yet read (rule 2 needs `close[j-1]`) waits until it is (L2 - its position keeps its broker SL
 / TP; placing waits, L7), then is judged at its own bar. **Any other
@@ -478,15 +482,18 @@ when its last position has closed (its open volume is zero); **every order of th
   open without its entry deal), the stale data - end only when the state that explains them is read: the deal, the
   history state, a cycle whose every read succeeded and was fresh. The disappearance of what such a condition watches
   never ends it: an order or a position gone without its explanation stays under cause 2 or 3, timed from that
-  condition's own start. A **request** (remove, modify, close, market entry) is done or `moot` exactly as above (a
+  condition's own start. A place of unknown outcome found (as an order, a position or a deal) is explained there; a
+  position of it seen without its entry deal is a new condition (cause 3) timed from that sighting. A **request** (remove, modify, close, market entry) is done or `moot` exactly as above (a
   target that no longer exists ends the request); what that disappearance leaves unexplained - a position gone
   without its exit deal, an order gone without its history state - is a condition of its own under cause 2 or 3, timed
   from the disappearance. A timer is never restarted by another condition beginning or ending. The runner's own
   conditions keep their own ends (the kill switch off, the gate passing, a `zone stop` - L7, L10).
 - **Safety first in each cycle** [Claude]: the stop deadline (L10) is checked at the very start of every cycle,
-  before any broker read and whatever the reads give. The removals owed (hands-off, a stop, the kill switch, a failed
-  gate, the stale data, an order already judged not wanted in an earlier cycle) are sent right after the read they
-  need (the open orders; a failed read -> next cycle), before and apart from every other step (the removals this
+  before any store or broker read and whatever the reads give (an active `--now` is held in memory; reading a new stop
+  request may fail without touching it). The removals owed (hands-off, a stop, the kill switch, a failed
+  gate, the stale data, an order already judged not wanted in an earlier cycle) are sent right after the reads they need - the
+  account (L1's pin) and the open orders, nothing else (a failure of any other read does not hold them back; a failure
+  of these two -> next cycle) - before and apart from every other step (the removals this
   cycle's own steps find come after them); an error in another step (the bars, the arming, the visits, the decision)
   never holds them back (it is cause 8 for that cycle, logged).
 - **The start** (every `zone run`, the first one and every restart): the broker's orders, positions and deals are read
@@ -519,13 +526,15 @@ pinned at start. The runner's own settings - `lot` (0.01, owner), `cycle_seconds
   and positions, the last requests, any order or position of the magic that is not ours.
 - `python -m app.cli zone stop` - under hands-off: the runner exits once every order of the magic is removed (the
   positions are the broker's). Otherwise it writes a stop request (a row the runner reads every cycle) and waits up to 60 s for
-  the runner's acknowledgement (else it says so and exits): every setup of the runner without a fill ends `interrupted` (no reservation); the runner writes the acknowledgement once it has read the
+  the runner's acknowledgement (else it says so and exits): every setup of the runner without a fill ends `interrupted` (no reservation; a setup with a pending entry waits
+  until its entry is read, L5); the runner writes the acknowledgement once it has read the
   request and the broker confirms every unfilled order of the magic removed; it places nothing new; open positions are
-  still managed (the BE, the exit, the leftover P2 removal) and the runner exits when none is open, or with `--now`
+  still managed (the BE, the exit, the leftover P2 removal) and the runner exits when none is open and no entry is
+  pending (an unexplained one ends by L8: its deal read, or hands-off), or with `--now`
   as soon as the removals are confirmed (the positions keep their broker SL / TP and are the owner's). A removal not
   confirmed: the runner keeps retrying and managing (without `--now` it never exits early); `zone stop` reports it
   after its 60 s and exits itself; with `--now` the runner exits after 60 s, the order named in the log (it keeps its
-  broker expiry).
+  broker expiry), and the request stays unacknowledged.
   Ctrl+C in the runner's window = `zone stop`; a second Ctrl+C = `--now`.
 
 ## L11. Acceptance - what a build must show
