@@ -333,7 +333,7 @@ once it is read (placing stops meanwhile, L7; hands-off after one `exec_tf` bar,
 waits with them**: its close steps (rules 1 - 3, the break-even, its exits) for the pending entry's bar and every later
 bar run only once the entry is read, then bar by bar in order - so a break-even never counts fills it has not seen.
 **Every other judgement of the setup waits too** - its interruption (L7, a `zone stop`, L10), a touch latched by
-rule 3, its end - until the entry is read; the wait holds while the condition is unexplained, also when the position
+rule 3, its orders' judgements (the withdrawal, the BUY P2 removal ahead), its end - until the entry is read; the wait holds while the condition is unexplained, also when the position
 disappears (L8: a broker condition ends only when it is explained). Removals for safety (L7, L8) do not wait, and
 **hands-off does not wait**: it ends every setup not ended `hands-off` at once (L8), and nothing of the setup is judged
 or acted on again - its buffered deals are recorded only (no fill judged, no close at market). **The setup's fills** are, in that order: the first fill of each name that the
@@ -534,12 +534,14 @@ pinned at start. The runner's own settings - `lot` (0.01, owner), `cycle_seconds
   until its entry is read, L5); the runner writes the acknowledgement once it has read the
   request and the broker confirms every unfilled order of the magic removed (on the account and orders reads alone,
   L8; the setups end `interrupted` once their fills are read, in that cycle or a later one); it places nothing new; open positions are
-  still managed (the BE, the exit, the leftover P2 removal) and the runner exits when none is open and no entry is
-  pending (an unexplained one ends by L8: its deal read, or hands-off), or with `--now`
+  still managed (the BE, the exit, the leftover P2 removal) and the runner exits when none is open and nothing of ours can still open one unseen - no entry pending (L5), no
+  place or market entry of unknown outcome (L8) - each ends by L8 (explained, or hands-off); or with `--now`
   as soon as the removals are confirmed (the positions keep their broker SL / TP and are the owner's). A removal not
   confirmed: the runner keeps retrying and managing (without `--now` it never exits early); `zone stop` reports it
   after its 60 s and exits itself; with `--now` the runner exits after 60 s, the order named in the log (it keeps its
-  broker expiry), and the request stays unacknowledged.
+  broker expiry), and the request stays unacknowledged. **Every `--now` exit** (the removals confirmed, or the 60 s)
+  first ends `interrupted` the setups known without a fill - none of their entries read, pending or of unknown outcome;
+  the rest of the unfinished rows end `restart` at the next start (L8).
   Ctrl+C in the runner's window = `zone stop`; a second Ctrl+C = `--now`.
 
 ## L11. Acceptance - what a build must show
