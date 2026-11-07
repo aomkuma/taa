@@ -10,7 +10,7 @@ coordinates, checks every result before it is believed, and decides what is kept
 
 - **The month:** October 2026, 1-27 (the latest full stretch of stored bars). Money: 200 USD, 0.01 lot,
   0.30 spread (`eye/money.py --ledger bot_ledger.csv`).
-- **What may change:** the `[Claude]` definitions in `eye/BOT_SPEC.md` (band width, H1 mode, the count
+- **What may change:** the `[Claude]` definitions in `eye/BOT_RULES.md` (band width, H1 mode, the count
   window, buffers, timeframes, the zone rule). **What may not change without the owner:** the owner's rules
   in METHOD 2e - the H1 side, at a level of the right kind, 3-5 peaks with divergence or an M / W, the break
   and the retest, the stop beyond the extreme, the target just before the next level, at least 1:2, held to
@@ -59,7 +59,7 @@ H1 side, then the count.
 sequence, which Claude had not; the divergence question is the same as C-H4 - the owner's, not ours.
 
 **The owner answered the divergence question (2026-10-28): *"one"*** - the 3-5 count needs divergence on
-one oscillator, not both. `div_mode` = one becomes the owner's default (BOT_SPEC R11), not a research variant.
+one oscillator, not both. `div_mode` = one becomes the owner's default (spec R11), not a research variant.
 
 ### Round 1 - eleven variants of the `[Claude]` definitions, October 1-27 (Sonnet's runner, `eye/bot_research.py`)
 
@@ -108,7 +108,7 @@ Kept below as the record of a method tried - not the owner's, and not to be run 
 
 Claude took the owner's comparison *"if 1H runs 6 USD, and M1 gets in near the top or the bottom of price,
 and it turns, that is 2R already"* for a rule (**a misreading - the owner later: only a comparison**) and
-wrote BOT_SPEC revision 4 (R12): the picture on M5 / M15 as before; the break, the retest and the stop on
+wrote spec revision 4 (R12): the picture on M5 / M15 as before; the break, the retest and the stop on
 M1; the stop beyond the extreme only.
 
 **Claude's expectation, written before the run (2026-10-29):** the stop falls from round 1's 10-40 USD to
@@ -146,7 +146,7 @@ from the stored M1 / M5 bars and got the same side, entry, stop and target.** On
 in October: an `L*` older than the 7,200-bar M1 frame (five trading days) is refused - zero such rows.
 So the three losses are what the rules as written do, not a bug.
 
-## Round 3 - the owner's Fibonacci (BOT_SPEC revision 5), with and without the count
+## Round 3 - the owner's Fibonacci (spec revision 5), with and without the count
 
 **Claude's expectation, written before the run (2026-10-29):**
 - Arithmetic, not a guess: with the stop at 0 % and the target at the leg's 100 %, R = (1 - e) / e before

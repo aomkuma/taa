@@ -1,9 +1,9 @@
 # The bot's rules - the current specification
 
 **This file is the specification in force** - the rules the bot uses now, their parameters, the acceptance
-cases a build must pass, and the plan for judging it. Where each rule came from, and every rule tried and
-dropped, is in `eye/BOT_SPEC.md` (the history); measurements are in `eye/BOT_RESEARCH.md`. A developer builds
-from this file alone; where it and the history differ, this file wins.
+cases a build must pass, and the plan for judging it. How each rule came to be is in git history; the forms
+tried and dropped are in `eye/TRIED.md`; measurements are in `eye/BOT_RESEARCH.md`. A developer builds
+from this file alone.
 
 **A second setup, the owner's run zones, has its own specification - `eye/ZONE_RULES.md` - and code (`eye/zone_bot.py`); nothing in this file applies to it, nor it to this one (2026-11-02).**
 
@@ -533,7 +533,7 @@ the smaller |the price - the order price|; then a BUY before a SELL.
   fade SELL of rule 2's example (limit 4169.23, stop 4184.75, target 4136.15, R 2.11) - on the stored bars it fills on the 07:10 bar and
   reaches the target at 11:55 Thai (Codex) - *report* what the bot writes.
   - **Withdrawn with rules 1 and 11** (2026-10-30): every earlier case that read H1, the M30 state, the lean or the
-    range target (they stay in git history and `eye/BOT_SPEC.md`). The 27/10/2026 18:30 case
+    range target (they stay in git history). The 27/10/2026 18:30 case
     used the old counter-leg - withdrawn with rule 2's rewrite. **Rule 2 (the leg traded with it)**: at 07/10/2026 07:00
     and 07:25, M5, the SELL leg is start 4184.25 -> end 4161.42, entry 0.382 = 4175.53, stop 4184.75, target 4147.81
     (rule 2's example); whether an order is written there (rules 3, 6, 9, 16) - *report*.
@@ -642,7 +642,7 @@ form], for a BUY on a **fixed** rule 2 leg (`L0` the start low, `H100` the end h
 
 ## Withdrawn - do not build
 
-None of these is a parameter to implement; they live only in the history (`eye/BOT_SPEC.md`): a side from H1
+None of these is a parameter to implement; they live only in git history: a side from H1
 structure alone (`fib_side` h1 / entry / any - replaced by the lean); revision 5's leg drawn in the trade's direction; the M1 entry; a fixed USD
 reach; "the leg's extreme must sit on a level" and 2e's "Where" row on this path (replaced by the owner's "Levels and
 the turn"); the bands of H1 / H4 pivots capping the target and their parameters (`major_tf`, `level_bars`,

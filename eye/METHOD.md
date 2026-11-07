@@ -333,10 +333,10 @@ The owner: *"write the code and let a bot do the work - correct, with every cond
 applies these steps bar by bar on the stored data - since 2026-10-31 at every 5-minute time of the day, 00:00 - 23:55 Thai (the owner: *"run it all the time"*; before, inside the owner's windows) - on closed bars only, and
 writes its decisions to `eye/bot_ledger.csv` (scored by `score.py`, read in money by `money.py --ledger`);
 research runs write to `eye/research/<variant>/` instead, so `bot_ledger.csv` may be empty.
-Its rules in force are `eye/BOT_RULES.md` (`eye/BOT_SPEC.md` is their history); every definition the owner did not
+Its rules in force are `eye/BOT_RULES.md`; every definition the owner did not
 give is marked `[Claude]` there and is a parameter written into each decision. Built by a Sonnet agent, reviewed twice by Codex, checked by
 Claude. **First runs (06-07/04 and 20-27/10/2026): no decision** - the reward floor and step 2 refused
-everything; the count was found splitting a double top in one zone (BOT_SPEC revision 3). **October 2026
+everything; the count was found splitting a double top in one zone (spec revision 3). **October 2026
 under the owner's rules (revision 3, 11 variants): no trade** (`eye/BOT_RESEARCH.md` round 1). An entry on M1
 (revision 4) was **Claude's misreading of a question of the owner's** and was removed at the owner's word
 (10-29). The owner's Fibonacci (above): round 3 (revision 5, Claude's wrong leg) lost; round 4 (revision 6) won October and
