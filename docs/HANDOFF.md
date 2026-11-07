@@ -63,7 +63,14 @@ trading run. Tests green means the code matches the spec, never "passed".
   Every zone test file passes one at a time (2026-11-07, the developer: fixes9 27, fixes8 21, trader 58, handsoff
   33, crash-anywhere 12, the rest unchanged). **The replay scope (the owner, 2026-11-07)**: one month, 2026-03, with
   the set's `exec_tf` M15 - *"if one month matches, assume it matches"*; M5 is replayed only before a switch to it.
-  Now: the 2026-03 M15 tick replay (started 14:18), then the poll mode, then Sol's code review 5.
+  **2026-03 M15 tick replay after the fixes: PASS** (46 / 46 visits, 7 / 7 setups, no WARNING; 1460 s).
+  **Sol's code review 5 (2026-11-07): 5 findings (1 P1)**, by root: a pending condition ended without its
+  explanation (a pending P1 forgotten when its position vanished; the stale timer cleared before a later read
+  failed) - the third time this question came, so one L8 rule "a pending condition ends only when it is explained";
+  hands-off's removals held back by an error in another step - L8 rule "safety first in each cycle" (both rules
+  under Sol's review); a quote's touch of a blocked P1 forgotten; the visit outcome of an in-bar touch-order row. A
+  Sonnet developer is fixing all five (Opus's limit resets 2026-11-08 13:00). Then Sol's code review 6, then the
+  replay (tick and poll), the full suite, the commit.
 - **`.env` (changed by Claude on the owner's word, 2026-11-04 18:22)**: `ENABLE_HIGH_RISK_PROFILE=false`,
   `ENABLE_LIVE_TRADING=true`, `LIVE_TRADING_CONFIRMATION=I-ACCEPT-LIVE-RISK-28941169` (`TRADING_MODE=LIVE`, `FBS-Real`) -
   **the LIVE gate is open**: anything of the system started now can trade LIVE. No strategy is enabled in
