@@ -122,13 +122,15 @@ Each rule says whose it is: **(owner)** or **[Claude]** (a form the owner did no
   memory and appends each newly closed bar; it does not write them to the store.
 - Every cycle: the quote (bid, ask, time) and the bars closed since the last cycle. **The steps at a bar's close**
   (L4's visits, arming and missed touches, L5's outcomes and break-even) run at the first cycle at which that closed
-  bar can be read from the broker, in bar order; until then they wait (and the data is not fresh, L7). The forming bar is never used,
+  bar can be read from the broker, in bar order; until then they wait (and the data is not fresh, L7). A closed bar
+  is **expected** once this process has read a quote stamped inside it - every frame alike (D1, H4, H1, `exec_tf`). The forming bar is never used,
   except the **open of the forming H1 bar** (the hour's open `o`, L4) read from the broker's current H1 bar, and
   **the forming `exec_tf` bar's bid high / low so far** - the extremes of the quotes the runner has read in it (L5's
   withdrawal and BUY P2 removal); at the bar's close the closed bar's true extremes are applied (L5).
 - **Fresh data** (for placing only): the quote is younger than `stale_quote_seconds`, and every frame's last closed
   bar equals the broker's last closed bar of that frame. While the market is closed (the weekend, the daily break)
-  nothing is placed and nothing is stale-removed (L7); the first cycle after the reopening judges freshness anew. A
+  nothing is placed and nothing is stale-removed (L7); the first cycle after the reopening judges freshness anew (a
+  stale removal already owed at the close stays owed and is sent at the first cycle after the reopening). A
   failed read of anything from the broker (the quote, the bars - the forming H1 bar included -, the account, the
   terminal, the orders, positions, deals or history) makes the data not fresh at once, for that cycle (L8).
   **The hour's decision** (L4) is made at the first cycle within the first 60 seconds **from the hour's first quote**
@@ -141,7 +143,8 @@ Each rule says whose it is: **(owner)** or **[Claude]** (a form the owner did no
   that earlier time, so a late recovery never opens a new 60 s; continuous cycles through the daily break or the
   weekend place the window at the reopening - at which placing
   is allowed (L7: the data fresh, the gate passing, the kill switch off, the terminal connected, nothing pending) and
-  the close steps of every bar closed at that open are done - the H1 bar's visits and arming, its `exec_tf` bars'
+  the close steps of every expected bar closed at that open are done (an expected bar not readable by then leaves
+  the hour undecided) - the H1 bar's visits and arming, its `exec_tf` bars'
   closes, and the grids, pivots and steps of the D1 / H4 bars and the month that start then (ZONE_RULES 3: the grid in
   force at the hour);
   if no such cycle comes by then, the hour is undecided - no candidates, no orders, its visits recorded `undecided`
@@ -230,7 +233,8 @@ hour's open. In real time, orders must rest from `j0`:
 - **The first visit of the hour**: the first quote **from the hour's decision on** with the bid within `Z` of a
   candidate - the decision cycle's own quote included (a candidate already within `Z` then is visited at once); before
   the decision there are no candidates, and a touch before it is an explained difference (L11) (BUY: bid <=
-  L + Z; SELL: bid >= L - Z), or a deal of one of its orders (a fill means the bid reached it), whichever the runner
+  L + Z; SELL: bid >= L - Z), or a deal of one of its orders (a fill means the bid reached it; a position of one of its orders seen without
+  its entry deal holds the hour's other candidates' visits until that deal is read, L5), whichever the runner
   sees first - the real order of the touches decides, also inside one `exec_tf` bar (where the simulation's fixed
   in-bar order may differ: an explained difference, L11). Both candidates seen in the same cycle: the candidates'
   order (the same touch bar: the nearer `o`, then the lower line). The candidates' order also decides L4's
@@ -528,7 +532,8 @@ pinned at start. The runner's own settings - `lot` (0.01, owner), `cycle_seconds
   positions are the broker's). Otherwise it writes a stop request (a row the runner reads every cycle) and waits up to 60 s for
   the runner's acknowledgement (else it says so and exits): every setup of the runner without a fill ends `interrupted` (no reservation; a setup with a pending entry waits
   until its entry is read, L5); the runner writes the acknowledgement once it has read the
-  request and the broker confirms every unfilled order of the magic removed; it places nothing new; open positions are
+  request and the broker confirms every unfilled order of the magic removed (on the account and orders reads alone,
+  L8; the setups end `interrupted` once their fills are read, in that cycle or a later one); it places nothing new; open positions are
   still managed (the BE, the exit, the leftover P2 removal) and the runner exits when none is open and no entry is
   pending (an unexplained one ends by L8: its deal read, or hands-off), or with `--now`
   as soon as the removals are confirmed (the positions keep their broker SL / TP and are the owner's). A removal not

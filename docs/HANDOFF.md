@@ -1,6 +1,6 @@
 # Session handoff
 
-Last updated **2026-11-04 Thai** (read with `Get-Date`). This file holds **the current state and what to do next only**
+Last updated **2026-11-08 03:15 Thai** (read with `Get-Date`). This file holds **the current state and what to do next only**
 (the owner, 2026-11-04: *"documents should hold only what is used, not every history"*); the history is in `git log`.
 
 **The process in force**: CLAUDE.md, "How the system is developed" - discuss and conclude -> record -> Codex reviews
@@ -20,74 +20,31 @@ trading run. Tests green means the code matches the spec, never "passed".
   hand) is **hands-off**: placing stops, every order of the magic removed, no position touched (its broker SL / TP),
   until the magic is flat, then a fresh start at the next H1 open (the owner, 2026-11-04: *"let it go - get the normal
   case right first"*; the owner's hand confirmed *"ตกลง"*).
-- **The spec is closed** (2026-11-04: Sol's closing review "no findings"; the owner's rule *"ข"* - later points are
-  raised by the developer while building).
+- **Points found while building** are raised by the developer, written into the spec and reviewed by Sol with the
+  code (the owner's rule *"ข"*, 2026-11-04).
 - **The build (the owner, 2026-11-04: *"get the system working for the best case first, to run it for real; do the
-  finishing work alongside"*)**: track A (Opus) brings `app/zone/trader.py` to the spec's normal case - "ours" = this
-  process's placements, L5's fills, the basic hands-off as the safety net, the ownership classifier and the restart
-  recovery deleted - then the replay spans for parity; track B (Sonnet, in parallel, new files only) the start's
-  history checks (the pinned server's store and its depth, L2) and the tests of hands-off's eight causes; A wires B in.
-  **Track B done**: `app/zone/history_check.py` and `tests/unit/test_zone_handsoff_causes.py`. **Track A done**
-  (uncommitted): `app/zone/ownership.py` and the restart recovery deleted; the normal case kept; hands-off's eight
-  causes detected; ruff, mypy, bandit, architecture clean; every zone test file passes one at a time (handsoff 33).
-  **Replay after the decision-window fix (the hour's first quote)**: 2026-03 M5 tick and poll, 2026-03 M15 tick - all
-  PASS (46 / 46 visits, 7 / 7 setups matched in every field, no WARNING line); 2024-03 M15 and 2026-03 M15 poll passed
-  before the fix and are not re-run. Claude re-ran: ruff, mypy, bandit clean; architecture 17, trader 59, handsoff 33,
-  restart 16, history_check 37 passed. Track A's developer stopped on Opus's weekly limit (resets 2026-11-08 13:00).
-  **Sol's code review (2026-11-04 23:10): 13 findings (5 P1), each reproduced on FakeMT5** - the normal case: a
-  market P2 before P1's fill, deal times without milliseconds, P2 given its own block, an original-SL exit recorded
-  as BE, M15 requiring an M5 file, the live path writing the stored bars; the safety net, three roots: placing checked
-  once per cycle not per send; the runner's view built from what it saw, not what it sent (manual exits with magic 0,
-  the owner's-hand fields, accepted tickets); timers cleared before their action (stale removal, the 3-tries cap,
-  `stop --now`). **All 13 fixed** (Sonnet, 2026-11-05; uncommitted; each with a test in
-  `tests/unit/test_zone_review_fixes8.py` that fails with its fix reverted): a marketable P2 only after P1's deal is
-  read; deal times to the millisecond; P2 tested against P1's block only; an exit at the original SL is `SL` unless the
-  BE stop was confirmed; only the required frames loaded (M15 needs no M5 file); the live path writes no bars; placing
-  re-checked before every send; deals of our positions kept whatever their magic; the latest accepted SL / expiry
-  expected; the 3-tries cap checked before the BE close; accepted tickets known at once; the stale removal owed until
-  done; `stop --now` exits after 60 s. Claude re-ran: ruff, mypy, bandit clean. **Replay 2026-03 M15 tick and M5 tick:
-  PASS** (46 / 46 visits, 7 / 7 setups, 0 differences, no WARNING line). Four old assertions held the behaviour L5
-  rule 3 and L7 forbid (P2's own block; P2 placed beside an unconfirmed market P1) - changed to the spec (Claude
-  re-ran: trader 58, fixes7 6, fixes8 21 passed).
-  **Sol's code review 4 (2026-11-05 01:20): 7 findings (2 P1)**. Three were spec gaps, **fixed in `eye/ZONE_LIVE.md`,
-  Sol clean, committed (41b7aad)**: the hour's first quote = the later of the H1 open and the last pre-hour quote read
-  (a late recovery opened a new 60 s); a failed forming-H1 read not fresh; an unknown place found cancelled is cause
-  7, not `moot`; the in-bar touch order recognised in the visit records (WARNING, the traded row carries the setup id);
-  tick replay cycles through gaps over `stale_quote_seconds`. The code findings, by root, all with the Sonnet
-  developer: one exit classifier from the first exit deal (`how` came back a second time); the M5 start's arming from
-  H1 only, complete only after its whole bootstrap; `stop --now` behind an unacknowledged stop; one broker-read path
-  and the last pre-hour read; one "ticket known" function; the in-bar touch order. Then the replays and Sol again.
-  **Replay after these fixes (2026-11-05)**: 2026-03 M15 tick PASS (46 / 46 visits, 7 / 7 setups, no WARNING); M5 tick
-  failed on the span's first hour (the replay started with no pre-hour quote read - the harness, not the rule). The
-  harness now serves the last tick before the span and cycles through tick gaps over `stale_quote_seconds` (L11).
-  Every zone test file passes one at a time (2026-11-07, the developer: fixes9 27, fixes8 21, trader 58, handsoff
-  33, crash-anywhere 12, the rest unchanged). **The replay scope (the owner, 2026-11-07)**: one month, 2026-03, with
-  the set's `exec_tf` M15 - *"if one month matches, assume it matches"*; M5 is replayed only before a switch to it.
-  **2026-03 M15 tick replay after the fixes: PASS** (46 / 46 visits, 7 / 7 setups, no WARNING; 1460 s).
-  **Sol's code review 5 (2026-11-07): 5 findings (1 P1)**, by root: a pending condition ended without its
-  explanation (a pending P1 forgotten when its position vanished; the stale timer cleared before a later read
-  failed) - the third time this question came, so one L8 rule "a pending condition ends only when it is explained";
-  hands-off's removals held back by an error in another step - L8 rule "safety first in each cycle" (both rules
-  reviewed clean, 3c48640); a quote's touch of a blocked P1 forgotten; the visit outcome of an in-bar touch-order row.
-  **All five fixed** (Sonnet; `tests/unit/test_zone_review_fixes10.py`, 10 tests, each failing with its fix reverted;
-  every zone test file passes one at a time). The pending entry is timed from its position's sighting (an L8 sentence,
-  uncommitted, reviewed with the code). Claude re-ran: ruff, mypy, bandit clean; architecture 17, fixes10 10, fixes9
-  27, trader 58, handsoff 33.
-  **Sol's code review 6 (2026-11-07): 4 findings (2 P1)** - both roots back a second time, so each is one mechanism:
-  the pending entry is a barrier on the whole setup (a stop, rule 3's latch, the close steps and the end wait until the
-  entry is read; hands-off does not wait; an ordinary stop exits only with no entry pending); a fixed cycle skeleton
-  (the stop deadline from memory before any store or broker read, then the account and orders, then the removals owed,
-  then the rest); the `--now` timeout exit leaves the stop unacknowledged. The spec for them reviewed clean and
-  committed. **Built** (Sonnet; `tests/unit/test_zone_review_fixes11.py`, 10 tests; every zone test file passes one at a
-  time; Claude re-ran ruff, mypy, bandit, fixes11 10, handsoff 33).
-  **Sol's code review 7 (2026-11-08 00:15): 6 findings (2 P1)** - up from 4; all code against the spec, four from the
-  last restructure. By root: the pending entry still not one per-setup registry (a global barrier held another
-  setup's BE; the stop exit missed a history-only pending fill) - the third time; the cycle's conditions computed twice
-  (stale removal while the market is closed, a failed terminal read still placing, the stop acknowledgement behind the
-  history read); and, on LIVE, the decision before the last exec bar closed at the H1 open is published. **An Opus
-  developer is fixing them** (`test_zone_review_fixes12.py`; the owner, 2026-11-08: complex work is Opus's - the
-  Sonnet developer was stopped before it changed anything). The machine slept 15:44 - 00:12 (the lid, then the
-  battery): long runs need it awake and on power.
+  finishing work alongside"*)**: uncommitted - `app/zone/` (the runner `trader.py`, `core.py`, `store.py`, `live.py`,
+  `history_check.py`), `app/cli/zone.py`, `app/storage/models/zone.py`, the migration 0044, the `app/broker` changes,
+  `tests/unit/test_zone_*.py`, `tests/zone_replay*.py`. The normal case exact, hands-off the safety net. Sol reviews the
+  code until a review finds nothing; every fix carries a test (`tests/unit/test_zone_review_fixes*.py`) that fails with
+  the fix reverted. The developer is Opus (CLAUDE.md step 4).
+- **Where it stands (2026-11-08 03:15)**: Sol's code review 7 (6 findings) fixed by Opus - one per-setup pending-entry
+  registry, one function judging the cycle's conditions, the decision waiting for the bars closed at the H1 open, the
+  stop acknowledged on the account and orders reads alone, a failed terminal read vetoing placing, no stale removal while
+  the market is closed (`test_zone_review_fixes12.py`, 10 tests; every zone test file passes one at a time; ruff, mypy,
+  bandit, architecture clean). Also a per-cycle store query that grew with the run: 592 -> 110 ms a cycle with a month's
+  placements (measured by Opus). Five spec decisions found while building are in `eye/ZONE_LIVE.md` (uncommitted): a
+  closed bar is expected once a quote stamped inside it was read, every frame alike; a stale removal owed at the close
+  is sent after the reopening; a position seen without its entry deal holds the hour's other candidates; the stop
+  acknowledgement needs the account and orders reads alone. **Sol reviews them with the code (review 8).**
+- **Next**: review 8's findings (Opus) -> review again until clean -> the 2026-03 M15 tick replay, then poll (the last
+  PASS was before review 5's fixes: 46 / 46 visits, 7 / 7 setups, no WARNING, 1460 s) -> the full suite once -> commit
+  by explicit paths -> the owner judges the charts (below) -> LIVE only on the owner's word.
+- **The replay scope (the owner, 2026-11-07)**: one month, 2026-03, with the set's `exec_tf` M15 - *"if one month
+  matches, assume it matches"*; M5 is replayed only before a switch to it.
+- **The machine**: long runs need it awake and on power. Since the sleep of 2026-11-07 the CPU runs at 19 % of its
+  speed (`% Processor Performance`; a plain 10M-step Python loop 10.3 s, normally under 1 s; measured 2026-11-08 03:07)
+  - tests and replays about 10x slow until a restart.
 - **`.env` (changed by Claude on the owner's word, 2026-11-04 18:22)**: `ENABLE_HIGH_RISK_PROFILE=false`,
   `ENABLE_LIVE_TRADING=true`, `LIVE_TRADING_CONFIRMATION=I-ACCEPT-LIVE-RISK-28941169` (`TRADING_MODE=LIVE`, `FBS-Real`) -
   **the LIVE gate is open**: anything of the system started now can trade LIVE. No strategy is enabled in
