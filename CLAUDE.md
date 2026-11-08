@@ -148,8 +148,10 @@ looks small.
   word of the owner; else ask) and fix the other line in the same change.
 - **Think the plan through myself** (owner, 2026-11-07: *"be sharper - I should not have to keep reminding you"*).
   Before announcing next steps, check them: the order (the review before the tests; a run whose result a coming
-  review may throw away goes last), what can run side by side (a read-only review beside a long run), the scope (only
-  the month and frame that will trade), and any stalled agent or stale process - at once, unasked.
+  review may throw away goes last - **the replay and the full suite only after a code review has found nothing**,
+  never beside an open review or fix "to save time"; the owner, 2026-11-07 and again 2026-11-09), what can run side
+  by side (a read-only review beside a long run whose result it cannot throw away), the scope (only the month and
+  frame that will trade), and any stalled agent or stale process - at once, unasked.
 - **An instruction the owner gives goes here at once**, not only into memory (owner, 2026-11-07: *"you still had to be
   told"*). Memory is this machine's only and its files are read only when recalled; CLAUDE.md is read whole every
   session.
