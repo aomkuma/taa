@@ -1,6 +1,6 @@
 # Session handoff
 
-Last updated **2026-11-08 03:15 Thai** (read with `Get-Date`). This file holds **the current state and what to do next only**
+Last updated **2026-11-09 01:40 Thai** (read with `Get-Date`). This file holds **the current state and what to do next only**
 (the owner, 2026-11-04: *"documents should hold only what is used, not every history"*); the history is in `git log`.
 
 **The process in force**: CLAUDE.md, "How the system is developed" - discuss and conclude -> record -> Codex reviews
@@ -28,23 +28,22 @@ trading run. Tests green means the code matches the spec, never "passed".
   `tests/unit/test_zone_*.py`, `tests/zone_replay*.py`. The normal case exact, hands-off the safety net. Sol reviews the
   code until a review finds nothing; every fix carries a test (`tests/unit/test_zone_review_fixes*.py`) that fails with
   the fix reverted. The developer is Opus (CLAUDE.md step 4).
-- **Where it stands (2026-11-08 03:15)**: Sol's code review 7 (6 findings) fixed by Opus - one per-setup pending-entry
-  registry, one function judging the cycle's conditions, the decision waiting for the bars closed at the H1 open, the
-  stop acknowledged on the account and orders reads alone, a failed terminal read vetoing placing, no stale removal while
-  the market is closed (`test_zone_review_fixes12.py`, 10 tests; every zone test file passes one at a time; ruff, mypy,
-  bandit, architecture clean). Also a per-cycle store query that grew with the run: 592 -> 110 ms a cycle with a month's
-  placements (measured by Opus). Five spec decisions found while building are in `eye/ZONE_LIVE.md` (uncommitted): a
-  closed bar is expected once a quote stamped inside it was read, every frame alike; a stale removal owed at the close
-  is sent after the reopening; a position seen without its entry deal holds the hour's other candidates; the stop
-  acknowledgement needs the account and orders reads alone. **Sol reviews them with the code (review 8).**
-- **Next**: review 8's findings (Opus) -> review again until clean -> the 2026-03 M15 tick replay, then poll (the last
-  PASS was before review 5's fixes: 46 / 46 visits, 7 / 7 setups, no WARNING, 1460 s) -> the full suite once -> commit
-  by explicit paths -> the owner judges the charts (below) -> LIVE only on the owner's word.
+- **Where it stands (2026-11-09 01:40)**: Sol's code reviews 7 and 8 fixed by Opus (`test_zone_review_fixes12.py` -
+  `fixes14.py`; every zone test file passes one at a time; ruff, mypy, bandit, architecture clean); the spec decisions
+  they raised reviewed clean and committed (2e2eb0a - 9ab9cca). **Sol's code review 9: 8 findings** - 3 of the normal
+  case (a quote judged against the wrong exec bar while an expected bar is late; a candidate dropped for the other's
+  visit losing its life events and its end at `--now`), 5 of the safety net (owed removals and timers lost when later
+  reads fail; an ordinary stop exiting with a market entry or a gone order unexplained; `--now` confirming from an old
+  orders snapshot; the account-switch ERROR each cycle). Opus fixes them in two batches, the normal case first. No
+  replay has been run on the code since review 5's fixes (the last PASS: 46 / 46 visits, 7 / 7 setups, 1460 s).
+- **Two tracks (the owner, 2026-11-09)**: once Sol's review finds nothing in the normal case -> the 2026-03 M15 tick
+  replay, then poll -> the full suite once -> commit by explicit paths -> the owner judges the charts (below); the
+  safety net (hands-off, `zone stop`, failed reads) is reviewed alongside until clean. LIVE only on the owner's word.
 - **The replay scope (the owner, 2026-11-07)**: one month, 2026-03, with the set's `exec_tf` M15 - *"if one month
   matches, assume it matches"*; M5 is replayed only before a switch to it.
-- **The machine**: long runs need it awake and on power. Since the sleep of 2026-11-07 the CPU runs at 19 % of its
-  speed (`% Processor Performance`; a plain 10M-step Python loop 10.3 s, normally under 1 s; measured 2026-11-08 03:07)
-  - tests and replays about 10x slow until a restart.
+- **The machine**: long runs need it awake and on power. After a sleep the CPU can stay throttled (2026-11-08: 19 %
+  `% Processor Performance`, a plain 10M-step Python loop 10.3 s, tests about 10x slow; back to normal by 2026-11-09) -
+  check that counter when timings look odd.
 - **`.env` (changed by Claude on the owner's word, 2026-11-04 18:22)**: `ENABLE_HIGH_RISK_PROFILE=false`,
   `ENABLE_LIVE_TRADING=true`, `LIVE_TRADING_CONFIRMATION=I-ACCEPT-LIVE-RISK-28941169` (`TRADING_MODE=LIVE`, `FBS-Real`) -
   **the LIVE gate is open**: anything of the system started now can trade LIVE. No strategy is enabled in

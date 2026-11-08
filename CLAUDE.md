@@ -149,7 +149,10 @@ looks small.
 - **Think the plan through myself** (owner, 2026-11-07: *"be sharper - I should not have to keep reminding you"*).
   Before announcing next steps, check them: the order (the review before the tests; a run whose result a coming
   review may throw away goes last - **the replay and the full suite only after a code review has found nothing**,
-  never beside an open review or fix "to save time"; the owner, 2026-11-07 and again 2026-11-09), what can run side
+  never beside an open review or fix "to save time"; the owner, 2026-11-07 and again 2026-11-09; for the zone
+  runner two tracks (the owner, 2026-11-09): the normal case's review clean -> the replay, the suite, the commit, the
+  owner's charts, while the safety net (hands-off, `zone stop`, failed reads) is reviewed alongside until clean;
+  LIVE stays the owner's word), what can run side
   by side (a read-only review beside a long run whose result it cannot throw away), the scope (only the month and
   frame that will trade), and any stalled agent or stale process - at once, unasked.
 - **An instruction the owner gives goes here at once**, not only into memory (owner, 2026-11-07: *"you still had to be
