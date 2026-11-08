@@ -48,7 +48,9 @@ Each rule says whose it is: **(owner)** or **[Claude]** (a form the owner did no
   exits. **Placing**: sending a new place request. L7 says when placing is stopped and managing goes on; only an
   account switch (L1) stops all managing; hands-off (L8) stops all of it but the removal of orders.
 - **Within one `exec_tf` bar** = within one `exec_tf` period of the moment the condition began (the send, or the first
-  cycle that saw it).
+  cycle that saw it); for a stale removal waiting for the reopening (L2), the time the market is closed does not count.
+- **Without a fill** (a setup or a candidate - L7, L10): none of its entries read or pending (L5); a place of unknown
+  outcome does not hold it (filled after the setup ended, it is closed at market, L5 "any other fill").
 - **A fault** is logged at ERROR; a bar-boundary difference (L11) at WARNING.
 - **The magic**: the orders and positions of XAUUSD with the zone runner's magic number on the pinned account (L1);
   nothing else is read, touched, or counted in "flat".
@@ -540,8 +542,8 @@ pinned at start. The runner's own settings - `lot` (0.01, owner), `cycle_seconds
   confirmed: the runner keeps retrying and managing (without `--now` it never exits early); `zone stop` reports it
   after its 60 s and exits itself; with `--now` the runner exits after 60 s, the order named in the log (it keeps its
   broker expiry), and the request stays unacknowledged. **Every `--now` exit** (the removals confirmed, or the 60 s)
-  first ends `interrupted` the setups known without a fill - none of their entries read, pending or of unknown outcome;
-  the rest of the unfinished rows end `restart` at the next start (L8).
+  first ends `interrupted` every unfinished row without a fill (a candidate not yet final at the hour's close
+  included); the rest end `restart` at the next start (L8).
   Ctrl+C in the runner's window = `zone stop`; a second Ctrl+C = `--now`.
 
 ## L11. Acceptance - what a build must show
