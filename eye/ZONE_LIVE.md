@@ -537,7 +537,9 @@ pinned at start. The runner's own settings - `lot` (0.01, owner), `cycle_seconds
   request and the broker confirms every unfilled order of the magic removed (on the account and orders reads alone,
   L8; the setups end `interrupted` once their fills are read, in that cycle or a later one); it places nothing new; open positions are
   still managed (the BE, the exit, the leftover P2 removal) and the runner exits when none is open and nothing of ours can still open one unseen - no entry pending (L5), no
-  place or market entry of unknown outcome (L8) - each ends by L8 (explained, or hands-off); or with `--now`
+  place of unknown outcome, no market entry not yet done (accepted or of unknown outcome, its entry deal not read -
+  L3, L8 cause 6), no order of ours gone without its explanation (L8 causes 1 - 2) - each ends by L8 (explained, or
+  hands-off); or with `--now`
   as soon as the removals are confirmed (the positions keep their broker SL / TP and are the owner's). A removal not
   confirmed: the runner keeps retrying and managing (without `--now` it never exits early); `zone stop` reports it
   after its 60 s and exits itself; with `--now` the runner exits after 60 s, the order named in the log (it keeps its
