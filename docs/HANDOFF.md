@@ -41,8 +41,16 @@ trading run. Tests green means the code matches the spec, never "passed".
     reads keep failing, a gone order, an owed close, an unknown place or a market entry give no hands-off - one
     expiry check of every running condition in phase 2;
   - a missing quote returns before the exhausted SL-modify cap is checked (`trader.py:3605`).
-- **Next**: the 2026-03 M15 tick replay, then poll -> the full suite once -> commit by explicit paths -> the owner
-  judges the charts (below) -> LIVE only on the owner's word.
+- **2026-03 M15 tick replay on the release code (2026-11-09 21:25; scratchpad `replay_rel1_m15_tick.txt`): the
+  gate says PASS - 46 / 46 visits, 7 / 7 setups matched in every field, 2774 s - but 14 WARNING lines, where the last
+  PASS (before review 5's fixes) had none**: 10 hours undecided at the daily reopening (22:00 UTC on 03-16 .. 03-31,
+  "placing was not allowed through the 60 s from its first quote"), the data called stale at the daily break on 03-11
+  and 03-24 (21:00:24 UTC; the removals performed; setup 207 ended `interrupted`), and one blocked P1 met by the
+  quotes (setup 208). L2 says the daily break is the market closed (nothing stale-removed) and L11 says an
+  uninterrupted replay with an undecided hour fails - the harness does not check it. **A normal-case defect: not
+  released; not yet explained** (they start after 2026-03-08; the cause is being found).
+- **Next**: the cause found and fixed, Sol's review, the replay again -> poll -> the full suite once -> commit ->
+  the owner judges the charts (below) -> LIVE only on the owner's word.
 - **The replay scope (the owner, 2026-11-07)**: one month, 2026-03, with the set's `exec_tf` M15 - *"if one month
   matches, assume it matches"*; M5 is replayed only before a switch to it.
 - **The machine**: long runs need it awake and on power. After a sleep the CPU can stay throttled (2026-11-08: 19 %
