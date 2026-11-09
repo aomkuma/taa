@@ -36,9 +36,10 @@ trading run. Tests green means the code matches the spec, never "passed".
   reads fail; an ordinary stop exiting with a market entry or a gone order unexplained; `--now` confirming from an old
   orders snapshot; the account-switch ERROR each cycle). Opus fixes them in two batches, the normal case first. No
   replay has been run on the code since review 5's fixes (the last PASS: 46 / 46 visits, 7 / 7 setups, 1460 s).
-- **Two tracks (the owner, 2026-11-09)**: once Sol's review finds nothing in the normal case -> the 2026-03 M15 tick
-  replay, then poll -> the full suite once -> commit by explicit paths -> the owner judges the charts (below); the
-  safety net (hands-off, `zone stop`, failed reads) is reviewed alongside until clean. LIVE only on the owner's word.
+- **Next (the owner, 2026-11-09: *"all the code fixed and all the review done - only then run the tests"*)**: every
+  finding fixed (the normal case and the safety net alike) and Sol's code review clean -> the 2026-03 M15 tick replay,
+  then poll -> the full suite once -> commit by explicit paths -> the owner judges the charts (below). LIVE only on the
+  owner's word.
 - **The replay scope (the owner, 2026-11-07)**: one month, 2026-03, with the set's `exec_tf` M15 - *"if one month
   matches, assume it matches"*; M5 is replayed only before a switch to it.
 - **The machine**: long runs need it awake and on power. After a sleep the CPU can stay throttled (2026-11-08: 19 %
