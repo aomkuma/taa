@@ -40,7 +40,12 @@ trading run. Tests green means the code matches the spec, never "passed".
   - an L8 deadline's expiry is checked behind the positions / deals / history reads (`trader.py:1072`): while those
     reads keep failing, a gone order, an owed close, an unknown place or a market entry give no hands-off - one
     expiry check of every running condition in phase 2;
-  - a missing quote returns before the exhausted SL-modify cap is checked (`trader.py:3605`).
+  - a missing quote returns before the exhausted SL-modify cap is checked (`trader.py:3605`);
+  - a holiday closure (no quote, but H1 bars at that New York weekday / hour in the previous four weeks) is judged
+    stale, not closed: resting orders removed and setups interrupted, hands-off if the broker refuses the removals for
+    a bar (Sol, spec review of "Market closed", P2) - a holiday or session rule in Words;
+  - when an owed interruption has nothing left to interrupt, `_decide` runs before `_manage` clears the latch, so the
+    decision waits one cycle (2 s live).
 - **2026-03 M15 tick replay on the release code (2026-11-09 21:25; scratchpad `replay_rel1_m15_tick.txt`): the
   gate says PASS - 46 / 46 visits, 7 / 7 setups matched in every field, 2774 s - but 14 WARNING lines, where the last
   PASS (before review 5's fixes) had none**: 10 hours undecided at the daily reopening (22:00 UTC on 03-16 .. 03-31,
@@ -48,7 +53,13 @@ trading run. Tests green means the code matches the spec, never "passed".
   and 03-24 (21:00:24 UTC; the removals performed; setup 207 ended `interrupted`), and one blocked P1 met by the
   quotes (setup 208). L2 says the daily break is the market closed (nothing stale-removed) and L11 says an
   uninterrupted replay with an undecided hour fails - the harness does not check it. **A normal-case defect: not
-  released; not yet explained** (they start after 2026-03-08; the cause is being found).
+  released.** The cause (the developer, from a short in-process replay of 03-16): Words "Market closed" judged the
+  four-week history in server time; the break follows New York (17:00) and the server clock EU daylight saving, so
+  after each DST change the break was taken for an open market, the stale data latched, and the latch blocked the
+  reopening's decision; the replay double then skipped the cycles of the 60 s window. Setup 208's line is a normal
+  rule-3 cancellation. **Fixed in the spec** (the history in New York time; the stored H1 misses 17:00 New York on 645
+  Monday - Thursday days, the rest holidays; Sol: no other finding); the code and the harness's L11 check of undecided
+  hours being built.
 - **Next**: the cause found and fixed, Sol's review, the replay again -> poll -> the full suite once -> commit ->
   the owner judges the charts (below) -> LIVE only on the owner's word.
 - **The replay scope (the owner, 2026-11-07)**: one month, 2026-03, with the set's `exec_tf` M15 - *"if one month

@@ -57,8 +57,10 @@ Each rule says whose it is: **(owner)** or **[Claude]** (a form the owner did no
 - **Hands-off** (L8): placing stopped, every order of the magic removed, no position touched, until the magic is
   **flat** - no order and no position of the magic on the pinned account.
 - **Fresh** (L2) / **stale**: the data test for placing. **Market closed**: no quote newer than `stale_quote_seconds` and
-  no H1 bar of the runner's series (the stored bars and those appended since) at this weekday and hour, in server
-  time, in any of the previous four weeks.
+  no H1 bar of the runner's series (the stored bars and those appended since) at this weekday and hour, **in New York
+  time** (`America/New_York` - the broker's daily break and weekend follow it, the break at 17:00 New York, while the
+  server clock follows EU daylight saving, so in server time the break moves for weeks after each change), in any of
+  the previous four weeks.
 
 ## L0. Shape - one logic, two drivers [Claude]
 
