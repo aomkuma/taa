@@ -138,8 +138,10 @@ looks small.
 - **Check a spec before review; every finding is fixed** (owner, 2026-11-03: *"the small ones should all be cleared,
   and the spec should not miss so often"*). Before a spec or a spec fix goes to review, check each rule against the
   reference code it must agree with (for the zone runner: `simulate_setup`'s in-bar order, `tests/zone_replay.py`)
-  and walk its edge cases (equal times, boundaries `>` / `>=`, restart, partial fills) myself. P3 findings are fixed
-  too - a review goes on until it finds nothing.
+  and walk its edge cases (equal times, boundaries `>` / `>=`, restart, partial fills) myself. **A release waits only
+  for the severe findings** (the owner, 2026-11-09: *"get the first release out; leave the non-severe defects for
+  now"*): a review with no P1 is clean enough to release; its P2 / P3 findings are recorded in HANDOFF as known
+  defects and fixed after the release.
 - **Documents hold only what is used** (owner, 2026-11-04: *"documents should hold only what is used, not every
   history"*). A spec states the rules in force; HANDOFF the current state and what to do next. Review rounds, counts and
   how a rule came to be stay in `git log` and the commit messages, never in the document. **Before adding to a

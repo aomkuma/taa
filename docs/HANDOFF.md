@@ -1,12 +1,13 @@
 # Session handoff
 
-Last updated **2026-11-09 08:10 Thai** (read with `Get-Date`). This file holds **the current state and what to do next only**
+Last updated **2026-11-09 20:45 Thai** (read with `Get-Date`). This file holds **the current state and what to do next only**
 (the owner, 2026-11-04: *"documents should hold only what is used, not every history"*); the history is in `git log`.
 
 **The process in force**: CLAUDE.md, "How the system is developed" - discuss and conclude -> record -> Codex reviews
 the documents (Sol: `codex.exe exec -m gpt-6.1-sol --sandbox read-only`, prompt on stdin; `codex.exe` is in
 `~/.vscode/extensions/openai.chatgpt-*/bin/windows-x86_64/`) -> a developer codes (Opus for the zone runner, the owner
-2026-11-03) -> Codex reviews the code until nothing is found (P3 included, the owner) -> the full suite and a commit ->
+2026-11-03) -> Codex reviews the code until it finds no P1 (P2 / P3 recorded as known defects, fixed after the release; the
+owner, 2026-11-09) -> the full suite and a commit ->
 the reading checked against the market, drawn, judged by Claude then the owner -> only then, with the owner's word, a
 trading run. Tests green means the code matches the spec, never "passed".
 
@@ -28,28 +29,20 @@ trading run. Tests green means the code matches the spec, never "passed".
   `tests/unit/test_zone_*.py`, `tests/zone_replay*.py`. The normal case exact, hands-off the safety net. Sol reviews the
   code until a review finds nothing; every fix carries a test (`tests/unit/test_zone_review_fixes*.py`) that fails with
   the fix reverted. The developer is Opus (CLAUDE.md step 4).
-- **Where it stands (2026-11-09 08:10, paused on the owner's word)**: Sol's code review 9 and two normal-case reviews
-  after it fixed by Opus (`test_zone_review_fixes15.py` - `fixes18.py`; ruff, mypy, bandit, architecture clean;
-  Claude re-ran fixes16 + fixes18: passed); the uncommitted code is `app/zone/trader.py` sha 072b6eb8. The spec they
-  raised (a setup is not ended until its first fill's bar is judged on its true extremes; the stop exit waits for it)
-  reviewed clean and committed. **Sol's code review 10: no spec findings, 6 code findings** (the prompt and log:
-  scratchpad `code_rev10.txt` / `code_rev10_log.txt`), by question:
-  - an exit or a resumption on a stale state: an ordinary stop exits on an earlier acknowledgement while an order
-    that appeared later rests (P1, trader.py:3659 - every exit needs a current removal confirmation); a dropped
-    candidate not interrupted by L7 or a stop, so a missed touch revives it and places after the kill switch cleared
-    (P1, :3213);
-  - L7 from one path only: a gate failing at a pre-placement re-check neither removes the setup's resting order nor
-    interrupts nor stops the cycle's other placements (P2, :3354);
-  - order-only L8 checks held behind unrelated reads: a stray order and a refused-removal timer (951 s on M15) give no
-    hands-off while the positions read fails (P2, :1049 - run them on the account and orders reads alone);
-  - the replay gate: broker exit reasons not checked (P2, `tests/zone_replay_broker_gate.py:243`); zero raw
-    differences required although L11 admits reviewed, recorded differences (P2, `tests/zone_replay_compare.py:626`).
-  Not yet sent to the developer. No replay has been run on the code since review 5's fixes (the last PASS: 46 / 46
-  visits, 7 / 7 setups, 1460 s).
-- **Next (the owner, 2026-11-09: *"all the code fixed and all the review done - only then run the tests"*)**: every
-  finding fixed (the normal case and the safety net alike) and Sol's code review clean -> the 2026-03 M15 tick replay,
-  then poll -> the full suite once -> commit by explicit paths -> the owner judges the charts (below). LIVE only on the
-  owner's word.
+- **Where it stands (2026-11-09 20:45)**: the code to release is `app/zone/trader.py` sha c81d231f and
+  `tests/zone_replay_broker_gate.py` sha cfcc3f69 (uncommitted, with the rest of `app/zone/`, `app/cli/zone.py`,
+  `app/storage/models/zone.py`, the migration 0044, the `app/broker` changes, `tests/unit/test_zone_*.py`,
+  `tests/unit/zone_live_support.py`, `tests/zone_replay*.py`). Sol's code review 12 found no P1 - **the first release
+  (the owner, 2026-11-09: *"get the first release out; leave the non-severe defects for now"*)**.
+- **Known defects, fixed after the release** (Sol's code review 12, all P2; scratchpad `code_rev12_log.txt`):
+  - the grid cache can keep an old H4 grid when H1 recovers after H4 advanced within the same Thai month
+    (`trader.py:856`) - key it on the effective event cutoff;
+  - an L8 deadline's expiry is checked behind the positions / deals / history reads (`trader.py:1072`): while those
+    reads keep failing, a gone order, an owed close, an unknown place or a market entry give no hands-off - one
+    expiry check of every running condition in phase 2;
+  - a missing quote returns before the exhausted SL-modify cap is checked (`trader.py:3605`).
+- **Next**: the 2026-03 M15 tick replay, then poll -> the full suite once -> commit by explicit paths -> the owner
+  judges the charts (below) -> LIVE only on the owner's word.
 - **The replay scope (the owner, 2026-11-07)**: one month, 2026-03, with the set's `exec_tf` M15 - *"if one month
   matches, assume it matches"*; M5 is replayed only before a switch to it.
 - **The machine**: long runs need it awake and on power. After a sleep the CPU can stay throttled (2026-11-08: 19 %
