@@ -1,6 +1,6 @@
 # Session handoff
 
-Last updated **2026-11-09 01:40 Thai** (read with `Get-Date`). This file holds **the current state and what to do next only**
+Last updated **2026-11-09 08:10 Thai** (read with `Get-Date`). This file holds **the current state and what to do next only**
 (the owner, 2026-11-04: *"documents should hold only what is used, not every history"*); the history is in `git log`.
 
 **The process in force**: CLAUDE.md, "How the system is developed" - discuss and conclude -> record -> Codex reviews
@@ -28,14 +28,24 @@ trading run. Tests green means the code matches the spec, never "passed".
   `tests/unit/test_zone_*.py`, `tests/zone_replay*.py`. The normal case exact, hands-off the safety net. Sol reviews the
   code until a review finds nothing; every fix carries a test (`tests/unit/test_zone_review_fixes*.py`) that fails with
   the fix reverted. The developer is Opus (CLAUDE.md step 4).
-- **Where it stands (2026-11-09 01:40)**: Sol's code reviews 7 and 8 fixed by Opus (`test_zone_review_fixes12.py` -
-  `fixes14.py`; every zone test file passes one at a time; ruff, mypy, bandit, architecture clean); the spec decisions
-  they raised reviewed clean and committed (2e2eb0a - 9ab9cca). **Sol's code review 9: 8 findings** - 3 of the normal
-  case (a quote judged against the wrong exec bar while an expected bar is late; a candidate dropped for the other's
-  visit losing its life events and its end at `--now`), 5 of the safety net (owed removals and timers lost when later
-  reads fail; an ordinary stop exiting with a market entry or a gone order unexplained; `--now` confirming from an old
-  orders snapshot; the account-switch ERROR each cycle). Opus fixes them in two batches, the normal case first. No
-  replay has been run on the code since review 5's fixes (the last PASS: 46 / 46 visits, 7 / 7 setups, 1460 s).
+- **Where it stands (2026-11-09 08:10, paused on the owner's word)**: Sol's code review 9 and two normal-case reviews
+  after it fixed by Opus (`test_zone_review_fixes15.py` - `fixes18.py`; ruff, mypy, bandit, architecture clean;
+  Claude re-ran fixes16 + fixes18: passed); the uncommitted code is `app/zone/trader.py` sha 072b6eb8. The spec they
+  raised (a setup is not ended until its first fill's bar is judged on its true extremes; the stop exit waits for it)
+  reviewed clean and committed. **Sol's code review 10: no spec findings, 6 code findings** (the prompt and log:
+  scratchpad `code_rev10.txt` / `code_rev10_log.txt`), by question:
+  - an exit or a resumption on a stale state: an ordinary stop exits on an earlier acknowledgement while an order
+    that appeared later rests (P1, trader.py:3659 - every exit needs a current removal confirmation); a dropped
+    candidate not interrupted by L7 or a stop, so a missed touch revives it and places after the kill switch cleared
+    (P1, :3213);
+  - L7 from one path only: a gate failing at a pre-placement re-check neither removes the setup's resting order nor
+    interrupts nor stops the cycle's other placements (P2, :3354);
+  - order-only L8 checks held behind unrelated reads: a stray order and a refused-removal timer (951 s on M15) give no
+    hands-off while the positions read fails (P2, :1049 - run them on the account and orders reads alone);
+  - the replay gate: broker exit reasons not checked (P2, `tests/zone_replay_broker_gate.py:243`); zero raw
+    differences required although L11 admits reviewed, recorded differences (P2, `tests/zone_replay_compare.py:626`).
+  Not yet sent to the developer. No replay has been run on the code since review 5's fixes (the last PASS: 46 / 46
+  visits, 7 / 7 setups, 1460 s).
 - **Next (the owner, 2026-11-09: *"all the code fixed and all the review done - only then run the tests"*)**: every
   finding fixed (the normal case and the safety net alike) and Sol's code review clean -> the 2026-03 M15 tick replay,
   then poll -> the full suite once -> commit by explicit paths -> the owner judges the charts (below). LIVE only on the

@@ -128,7 +128,12 @@ Each rule says whose it is: **(owner)** or **[Claude]** (a form the owner did no
   is **expected** once this process has read a quote stamped inside it - every frame alike (D1, H4, H1, `exec_tf`). The forming bar is never used,
   except the **open of the forming H1 bar** (the hour's open `o`, L4) read from the broker's current H1 bar, and
   **the forming `exec_tf` bar's bid high / low so far** - the extremes of the quotes the runner has read in it (L5's
-  withdrawal and BUY P2 removal); at the bar's close the closed bar's true extremes are applied (L5).
+  withdrawal and BUY P2 removal); at the bar's close the closed bar's true extremes are applied (L5) - **a setup whose
+  first fill was taken on the quotes of the forming bar is not ended (its outcome, its reservation) until that bar has
+  closed and been judged on its true extremes in the simulation's in-bar order**: an exit inside the bar waits for
+  that judgement (nothing more is placed or filled for the setup meanwhile); the withdrawal met -> that bar's fills and
+  exits are not the setup's (any of their positions still open is closed at market, L5 "any other fill") and it
+  ends `no fill`.
 - **Fresh data** (for placing only): the quote is younger than `stale_quote_seconds`, and every frame's last closed
   bar equals the broker's last closed bar of that frame. While the market is closed (the weekend, the daily break)
   nothing is placed and nothing is stale-removed (L7); the first cycle after the reopening judges freshness anew (a
@@ -539,7 +544,7 @@ pinned at start. The runner's own settings - `lot` (0.01, owner), `cycle_seconds
   still managed (the BE, the exit, the leftover P2 removal) and the runner exits when none is open and nothing of ours can still open one unseen - no entry pending (L5), no
   place of unknown outcome, no market entry not yet done (accepted or of unknown outcome, its entry deal not read -
   L3, L8 cause 6), no order of ours gone without its explanation (L8 causes 1 - 2) - each ends by L8 (explained, or
-  hands-off); or with `--now`
+  hands-off) - and no setup whose first fill's bar is still to be judged (L2, at most one `exec_tf` bar); or with `--now`
   as soon as the removals are confirmed (the positions keep their broker SL / TP and are the owner's). A removal not
   confirmed: the runner keeps retrying and managing (without `--now` it never exits early); `zone stop` reports it
   after its 60 s and exits itself; with `--now` the runner exits after 60 s, the order named in the log (it keeps its
