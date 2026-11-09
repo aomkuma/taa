@@ -151,7 +151,8 @@ looks small.
   review may throw away goes last - **the replay and the full suite only after a code review has found nothing**,
   never beside an open review or fix "to save time"; the owner, 2026-11-07 and twice 2026-11-09: *"all the code
   fixed and all the review done - only then run the tests"* - every finding of every part, the normal case and the
-  safety net alike, fixed and reviewed clean first), what can run side
+  safety net alike, fixed and reviewed clean first; the owner had to say it four times - **never propose, ask about
+  or prepare a way round this order**), what can run side
   by side (a read-only review beside a long run whose result it cannot throw away), the scope (only the month and
   frame that will trade), and any stalled agent or stale process - at once, unasked.
 - **An instruction the owner gives goes here at once**, not only into memory (owner, 2026-11-07: *"you still had to be
