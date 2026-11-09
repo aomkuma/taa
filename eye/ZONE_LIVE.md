@@ -586,7 +586,9 @@ pinned at start. The runner's own settings - `lot` (0.01, owner), `cycle_seconds
    - **The gate**: zero **unexplained** differences and no runner log line at ERROR or above. Each difference is
      listed with its bar and the path's facts (the ticks around it, the runner's decisions and the simulation's); the
      harness may *suggest* a cause, and the run is accepted only once each difference is explained by hand against
-     those facts and recorded in `eye/BOT_RESEARCH.md`. The causes that can explain one (the list is closed): the order of touches inside
+     those facts and recorded in `eye/BOT_RESEARCH.md` - **the harness itself fails on every difference** (it lists
+     them and holds no list of accepted ones; accepting an explained difference is that record, by hand). The causes
+     that can explain one (the list is closed): the order of touches inside
      one bar (the simulation's fixed in-bar order vs the path); the bar boundary (L5's pre-close window, and the time from a bar's `close_time` to the first
      cycle that has read and processed that closed bar, L2); a P2 placed after its P1 filled within the same bar (a marketable P1, or both placed
      again at a bar's open) and touched before it rested; L4's both-filled race (both candidates filled between two cycles); a missed touch (L4) in the polling
