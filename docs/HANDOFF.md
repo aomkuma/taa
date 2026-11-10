@@ -1,6 +1,6 @@
 # Session handoff
 
-Last updated **2026-11-09 20:45 Thai** (read with `Get-Date`). This file holds **the current state and what to do next only**
+Last updated **2026-11-10 11:55 Thai** (read with `Get-Date`). This file holds **the current state and what to do next only**
 (the owner, 2026-11-04: *"documents should hold only what is used, not every history"*); the history is in `git log`.
 
 **The process in force**: CLAUDE.md, "How the system is developed" - discuss and conclude -> record -> Codex reviews
@@ -29,10 +29,9 @@ trading run. Tests green means the code matches the spec, never "passed".
   `tests/unit/test_zone_*.py`, `tests/zone_replay*.py`. The normal case exact, hands-off the safety net. Sol reviews the
   code until a review finds nothing; every fix carries a test (`tests/unit/test_zone_review_fixes*.py`) that fails with
   the fix reverted. The developer is Opus (CLAUDE.md step 4).
-- **Where it stands (2026-11-09 20:45)**: the code to release is `app/zone/trader.py` sha c81d231f and
-  `tests/zone_replay_broker_gate.py` sha cfcc3f69 (uncommitted, with the rest of `app/zone/`, `app/cli/zone.py`,
+- **Where it stands (2026-11-10 11:55)**: the code released is `app/zone/trader.py` sha cb70dbf2 (committed 2312b10, with the rest of `app/zone/`, `app/cli/zone.py`,
   `app/storage/models/zone.py`, the migration 0044, the `app/broker` changes, `tests/unit/test_zone_*.py`,
-  `tests/unit/zone_live_support.py`, `tests/zone_replay*.py`). Sol's code review 12 found no P1 - **the first release
+  `tests/unit/zone_live_support.py`, `tests/zone_replay*.py`). Sol's code review 13 found no P1 - **the first release
   (the owner, 2026-11-09: *"get the first release out; leave the non-severe defects for now"*)**.
 - **Known defects, fixed after the release** (Sol's code review 12, all P2; scratchpad `code_rev12_log.txt`):
   - the grid cache can keep an old H4 grid when H1 recovers after H4 advanced within the same Thai month
@@ -87,7 +86,12 @@ trading run. Tests green means the code matches the spec, never "passed".
   that the simulation also makes (the setup matched).
 - **2026-03 M15 poll replay on trader cb70dbf2 (2026-11-10 11:17; scratchpad `replay_rel2_m15_poll.txt`): PASS** -
   46 / 46 visits, 7 / 7 setups matched in every field, 1834 s; the same one WARNING line (the rule-3 cancellation).
-- **Next**: the full suite once -> commit -> the owner judges the charts (below) -> LIVE only on the owner's word.
+- **The full suite on trader cb70dbf2 (2026-11-10 11:46; scratchpad `full_suite_rel.txt`)**: 5126 passed, 31 skipped,
+  2 failed, both explained and fixed: a test written before the L2 / L5 rule "a setup whose first fill was taken on
+  the forming bar's quotes ends only at that bar's close" (`test_zone_review_fixes3.py`, now checking that rule), and
+  the web API samples (the config response carries `zone_live`; regenerated, the frontend tests that read them pass).
+  **Committed: 2312b10** (the runner, its CLI, store, migration, tests and harness; not started on any account).
+- **Next**: the owner judges the charts (below) -> LIVE only on the owner's word.
 - **The work after this release (the owner, 2026-11-10)**: a trade journal page in the system's web app (`app/web`),
   read from the zone runner's store (`zone_live_setup`, `zone_live_request`, `zone_live_visit`): the list of trades,
   the result in R and in money, and a chart of each trade's entries and exits. Through the full process (spec, review,
