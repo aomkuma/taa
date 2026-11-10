@@ -49,3 +49,17 @@ test-results/
 *.swp
 .DS_Store
 Thumbs.db
+
+# --- Scratch and regenerable run output ---------------------------------------
+*.pkl
+eye/bot_ledger.csv
+eye/bot_log.csv
+# the stopped Volume Profile study: large intermediates its scripts write again
+research/xauusd_poc_m5/**/qualifying_profile_windows.csv
+research/xauusd_poc_m5/edge_regime_2026-10-31/signal_features.csv
+research/xauusd_poc_m5/rolling_6h_m5/rolling_profiles.csv
+# drawings the scripts draw again (eye/zone_bot.py, eye/draw_trades.py, eye/walk.py)
+eye/research/**/*.png
+eye/trades/**/*.png
+eye/walk/**/*.png
+eye/wip/**/*.png
