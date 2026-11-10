@@ -84,3 +84,5 @@ eye/wip/**/*.log
 eye/wip/**/*.diff
 research/**/*.jsonl
 research/**/*.bak-*
+research/**/*.xls
+research/**/*.xlsx
