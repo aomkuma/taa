@@ -82,3 +82,5 @@ eye/wip/**/*.csv
 eye/wip/**/*.json
 eye/wip/**/*.log
 eye/wip/**/*.diff
+research/**/*.jsonl
+research/**/*.bak-*
