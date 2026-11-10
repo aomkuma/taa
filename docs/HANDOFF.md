@@ -94,9 +94,9 @@ trading run. Tests green means the code matches the spec, never "passed".
 - **LIVE start (the owner, 2026-11-10 12:00: *"use it for real"* - the runner reads as the simulation, whose charts
   the owner has seen)**: `zone run --market XAUUSD --set default` started 12:02 and 12:03 in its own window, both
   refused before any order: *"trading is not allowed for this login (investor password?)"* - the system's client logs
-  in with the `.env` login (FBS-Real, ...169) and the account reports `trade_allowed` False, so `MT5_PASSWORD` in
-  `.env` is the investor (read-only) password; the terminal's Algo Trading is also off. **Waiting for the owner**: the
-  trading (master) password in `.env` and Algo Trading on in the terminal - then the start again. A keep-awake
+  in with the `.env` login (FBS-Real, ...169) and the account reports `trade_allowed` False, an investor (read-only)
+  password or an account the broker does not let trade. **Waiting for the owner**: an account that can trade (and
+  is funded) - then the start again. A keep-awake
   helper (`data/zone_keepawake.ps1`, a minimised window) keeps the PC from sleeping while it runs (AC sleep is 5 h).
 - **Paper beside LIVE (the owner, 2026-11-10)**: `eye/zone_paper.py [--update] [--since "2026-11-10 12:00"]` - the
   simulation unchanged on the FBS-Real stored bars (cut as the runner starts), every setup visited from `--since` at
@@ -105,7 +105,9 @@ trading run. Tests green means the code matches the spec, never "passed".
   the broker's bars through the read-only gateway with the `.env` login, whether or not that login can trade.
   **Running since 2026-11-10 12:00 Thai** (first run 12:15: bars to 12:00, 0 setups yet); run it again to bring the
   paper up to date (not scheduled). The LIVE start still waits: read 12:10 with the saved `.env`, account ...169
-  `trade_allowed` False, balance 0.00 USD, Algo Trading off.
+  `trade_allowed` False, balance 0.00 USD on the system's terminal (`C:\MT5	aa-bot`, `.env`; its Algo Trading is
+  on - checks made without the path attach to `C:\Program Files\FBS MetaTrader 5`, another terminal: always pass
+  `MT5_TERMINAL_PATH` and `MT5_PORTABLE`).
 - **The work after this release (the owner, 2026-11-10)**: a trade journal page in the system's web app (`app/web`),
   read from the zone runner's store (`zone_live_setup`, `zone_live_request`, `zone_live_visit`): the list of trades,
   the result in R and in money, and a chart of each trade's entries and exits. Through the full process (spec, review,

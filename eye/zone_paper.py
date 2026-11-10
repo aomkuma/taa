@@ -55,7 +55,12 @@ def update_bars(market: str) -> None:
     if env.MT5_LOGIN is None or env.MT5_PASSWORD is None:
         raise ZoneError("MT5_LOGIN and MT5_PASSWORD are required to read the bars")
     ok = client.mt5.initialize(
-        login=env.MT5_LOGIN, password=env.MT5_PASSWORD.get_secret_value(), server=env.MT5_SERVER
+        env.MT5_TERMINAL_PATH or None,
+        login=env.MT5_LOGIN,
+        password=env.MT5_PASSWORD.get_secret_value(),
+        server=env.MT5_SERVER,
+        timeout=env.MT5_TIMEOUT_MS,
+        portable=env.MT5_PORTABLE,
     )
     if not ok:
         raise ZoneError(f"the terminal refused the login: {client.mt5.last_error()}")
