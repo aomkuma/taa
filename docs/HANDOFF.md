@@ -1,6 +1,6 @@
 # Session handoff
 
-Last updated **2026-11-10 11:55 Thai** (read with `Get-Date`). This file holds **the current state and what to do next only**
+Last updated **2026-11-10 12:45 Thai** (read with `Get-Date`). This file holds **the current state and what to do next only**
 (the owner, 2026-11-04: *"documents should hold only what is used, not every history"*); the history is in `git log`.
 
 **The process in force**: CLAUDE.md, "How the system is developed" - discuss and conclude -> record -> Codex reviews
@@ -15,7 +15,8 @@ trading run. Tests green means the code matches the spec, never "passed".
 
 - **Goal (the owner, 2026-11-02)**: LIVE when it is done; 0.01 lot a position, fixed; no DEMO; *"I watch the trades and
   take the risk myself"*. LIVE needs `ENABLE_LIVE_TRADING=true` and `LIVE_TRADING_CONFIRMATION=I-ACCEPT-LIVE-RISK-<login>`
-  in `.env`, set by the owner, and the owner's word to start.
+  in `.env`, set only on the owner's word (set 2026-11-04, below), and the owner's word to start (given
+  2026-11-10).
 - **The spec: `eye/ZONE_LIVE.md`** - the normal case exact (parity with the simulation on uninterrupted runs); an
   abnormal case (every start that finds the magic not flat, anything the runner cannot know or do, the owner acting by
   hand) is **hands-off**: placing stops, every order of the magic removed, no position touched (its broker SL / TP),
@@ -23,17 +24,15 @@ trading run. Tests green means the code matches the spec, never "passed".
   case right first"*; the owner's hand confirmed *"ตกลง"*).
 - **Points found while building** are raised by the developer, written into the spec and reviewed by Sol with the
   code (the owner's rule *"ข"*, 2026-11-04).
-- **The build (the owner, 2026-11-04: *"get the system working for the best case first, to run it for real; do the
-  finishing work alongside"*)**: uncommitted - `app/zone/` (the runner `trader.py`, `core.py`, `store.py`, `live.py`,
+- **The build**: committed 2312b10 - `app/zone/` (the runner `trader.py`, `core.py`, `store.py`, `live.py`,
   `history_check.py`), `app/cli/zone.py`, `app/storage/models/zone.py`, the migration 0044, the `app/broker` changes,
-  `tests/unit/test_zone_*.py`, `tests/zone_replay*.py`. The normal case exact, hands-off the safety net. Sol reviews the
-  code until a review finds nothing; every fix carries a test (`tests/unit/test_zone_review_fixes*.py`) that fails with
-  the fix reverted. The developer is Opus (CLAUDE.md step 4).
-- **Where it stands (2026-11-10 11:55)**: the code released is `app/zone/trader.py` sha cb70dbf2 (committed 2312b10, with the rest of `app/zone/`, `app/cli/zone.py`,
-  `app/storage/models/zone.py`, the migration 0044, the `app/broker` changes, `tests/unit/test_zone_*.py`,
-  `tests/unit/zone_live_support.py`, `tests/zone_replay*.py`). Sol's code review 13 found no P1 - **the first release
-  (the owner, 2026-11-09: *"get the first release out; leave the non-severe defects for now"*)**.
-- **Known defects, fixed after the release** (Sol's code review 12, all P2; scratchpad `code_rev12_log.txt`):
+  `tests/unit/test_zone_*.py`, `tests/unit/zone_live_support.py`, `tests/zone_replay*.py`. The normal case exact,
+  hands-off the safety net. Every fix carries a test (`tests/unit/test_zone_review_fixes*.py`) that fails with the
+  fix reverted. The developer is Opus (CLAUDE.md step 4).
+- **Where it stands**: the first release (the owner, 2026-11-09: *"get the first release out; leave the non-severe
+  defects for now"*) is `app/zone/trader.py` sha cb70dbf2, commit 2312b10; Sol's code review 13 found no P1.
+- **Known defects, fixed after the release** (Sol's code reviews 12 and 13 and its spec review of "Market
+  closed", all P2; scratchpad `code_rev12_log.txt`):
   - the grid cache can keep an old H4 grid when H1 recovers after H4 advanced within the same Thai month
     (`trader.py:856`) - key it on the effective event cutoff;
   - an L8 deadline's expiry is checked behind the positions / deals / history reads (`trader.py:1072`): while those
@@ -66,20 +65,6 @@ trading run. Tests green means the code matches the spec, never "passed".
   - the fixed 60 s (the decision window, the stop's wait) are not named as fixed beside L9's settings; L2 lines
     159 - 161 carry a doubled "(L4)".
   - The first holiday closure after a start (the known defect above) is US Thanksgiving, 2026-11-26.
-- **2026-03 M15 tick replay on the release code (2026-11-09 21:25; scratchpad `replay_rel1_m15_tick.txt`): the
-  gate says PASS - 46 / 46 visits, 7 / 7 setups matched in every field, 2774 s - but 14 WARNING lines, where the last
-  PASS (before review 5's fixes) had none**: 10 hours undecided at the daily reopening (22:00 UTC on 03-16 .. 03-31,
-  "placing was not allowed through the 60 s from its first quote"), the data called stale at the daily break on 03-11
-  and 03-24 (21:00:24 UTC; the removals performed; setup 207 ended `interrupted`), and one blocked P1 met by the
-  quotes (setup 208). L2 says the daily break is the market closed (nothing stale-removed) and L11 says an
-  uninterrupted replay with an undecided hour fails - the harness does not check it. **A normal-case defect: not
-  released.** The cause (the developer, from a short in-process replay of 03-16): Words "Market closed" judged the
-  four-week history in server time; the break follows New York (17:00) and the server clock EU daylight saving, so
-  after each DST change the break was taken for an open market, the stale data latched, and the latch blocked the
-  reopening's decision; the replay double then skipped the cycles of the 60 s window. Setup 208's line is a normal
-  rule-3 cancellation. **Fixed in the spec** (the history in New York time; the stored H1 misses 17:00 New York on 645
-  Monday - Thursday days, the rest holidays; Sol: no other finding); built (trader.py cb70dbf2, the harness's L11 check of
-  undecided hours, stale removals and interruptions); Sol's code review 13: no P1.
 - **2026-03 M15 tick replay on trader cb70dbf2 (2026-11-10 10:46; scratchpad `replay_rel2_m15_tick.txt`): PASS** -
   46 / 46 visits, 7 / 7 setups matched in every field, no undecided hour, no stale removal, no interruption, 2239 s;
   one WARNING line, read by hand: a blocked P1 (4464.098) met by the quotes and cancelled - a rule-3 cancellation (L5)
@@ -92,22 +77,21 @@ trading run. Tests green means the code matches the spec, never "passed".
   the web API samples (the config response carries `zone_live`; regenerated, the frontend tests that read them pass).
   **Committed: 2312b10** (the runner, its CLI, store, migration, tests and harness; not started on any account).
 - **LIVE start (the owner, 2026-11-10 12:00: *"use it for real"* - the runner reads as the simulation, whose charts
-  the owner has seen)**: `zone run --market XAUUSD --set default` started 12:02 and 12:03 in its own window, both
-  refused before any order: *"trading is not allowed for this login (investor password?)"* - the system's client logs
-  in with the `.env` login (FBS-Real, ...169) and the account reports `trade_allowed` False, an investor (read-only)
-  password or an account the broker does not let trade. **Waiting for the owner**: an account that can trade (and
-  is funded) - then the start again. A keep-awake
-  helper (`data/zone_keepawake.ps1`, a minimised window) keeps the PC from sleeping while it runs (AC sleep is 5 h).
+  the owner has seen)**: `zone run --market XAUUSD --set default`, started 12:02 and 12:03, was refused before any
+  order: the account (`.env`: FBS-Real, ...169, on the system's terminal `C:\MT5\taa-bot`, Algo Trading on) reports
+  `trade_allowed` False and balance 0.00 USD; the terminal's log (`C:\MT5\taa-bot\logs\20261110.log`) says
+  *"trading has been disabled - disabled on server"* - the owner: an account without money shows that. **Waiting
+  for the owner's deposit**; then check `trade_allowed` (always with `MT5_TERMINAL_PATH` and `MT5_PORTABLE` - a
+  check without them attaches to `C:\Program Files\FBS MetaTrader 5`, another terminal) and start the runner in
+  its own window. A keep-awake helper (`data/zone_keepawake.ps1`, a minimised window) keeps the PC from sleeping
+  (AC sleep is 5 h).
 - **Paper beside LIVE (the owner, 2026-11-10)**: `eye/zone_paper.py [--update] [--since "2026-11-10 12:00"]` - the
   simulation unchanged on the FBS-Real stored bars (cut as the runner starts), every setup visited from `--since` at
   0.01 lot whatever the real account's margin allows; outputs `eye/research/zone/XAUUSD/paper/`; compared setup by
   setup with what LIVE took. Checked against the recorded FBS-Real run (October 2026: identical). `--update` reads
   the broker's bars through the read-only gateway with the `.env` login, whether or not that login can trade.
   **Running since 2026-11-10 12:00 Thai** (first run 12:15: bars to 12:00, 0 setups yet); run it again to bring the
-  paper up to date (not scheduled). The LIVE start still waits: read 12:10 with the saved `.env`, account ...169
-  `trade_allowed` False, balance 0.00 USD on the system's terminal (`C:\MT5	aa-bot`, `.env`; its Algo Trading is
-  on - checks made without the path attach to `C:\Program Files\FBS MetaTrader 5`, another terminal: always pass
-  `MT5_TERMINAL_PATH` and `MT5_PORTABLE`).
+  paper up to date - not scheduled (`data/zone_paper_daily.cmd` is ready for a daily task, the owner's to create).
 - **The work after this release (the owner, 2026-11-10)**: a trade journal page in the system's web app (`app/web`),
   read from the zone runner's store (`zone_live_setup`, `zone_live_request`, `zone_live_visit`): the list of trades,
   the result in R and in money, and a chart of each trade's entries and exits. Through the full process (spec, review,
@@ -120,7 +104,8 @@ trading run. Tests green means the code matches the spec, never "passed".
 - **`.env` (changed by Claude on the owner's word, 2026-11-04 18:22)**: `ENABLE_HIGH_RISK_PROFILE=false`,
   `ENABLE_LIVE_TRADING=true`, `LIVE_TRADING_CONFIRMATION=I-ACCEPT-LIVE-RISK-28941169` (`TRADING_MODE=LIVE`, `FBS-Real`) -
   **the LIVE gate is open**: anything of the system started now can trade LIVE. No strategy is enabled in
-  `config.yaml`; DEMO and the observer are off in Task Scheduler; the zone runner is not started (the owner's word).
+  `config.yaml`; DEMO and the observer are off in Task Scheduler; the zone runner is not running (the LIVE start,
+  above).
 - **FBS-Real history fetched** (read-only, D1 / H4 / H1 / M15 from 2021-08-22; `data/history/FBS-Real/XAUUSD`, passes
   `history_check`). Its bars differ from FBS-Demo's by under 0.40 USD on 99 % (up to 9 USD on news bars; measured,
   `eye/BOT_RESEARCH.md`). **The zone set on FBS-Real bars** (cut to FBS-Demo's first bars): 107 setups, +0.399 R a
@@ -129,8 +114,7 @@ trading run. Tests green means the code matches the spec, never "passed".
   brought up to date from the broker at start (L2).
 - **The simulation** (built 2026-11-02, `eye/zone_bot.py`, set `XAUUSD/default@v26` in `data/bot_config.db`): October
   2023 - October 2026, 109 setups, +0.392 R a setup, 41 % TP, +1868.9 USD at 0.01 lot a position, drawdown -280.0;
-  charts in `eye/research/zone/XAUUSD/default/`. **Still open (CLAUDE.md step 7)**: the owner judges the charts - does
-  the bot read the zones and entries as the owner does.
+  charts in `eye/research/zone/XAUUSD/default/` (seen by the owner, who gave the word for LIVE on 2026-11-10).
 
 ## 2. The Fibonacci bot - paused since 2026-11-01
 
@@ -162,7 +146,7 @@ Continue TAA (C:\Users\korap\taa). Chat with me in Thai; docs, code and comments
 read with PowerShell Get-Date. Follow CLAUDE.md.
 
 Read first: docs/HANDOFF.md (the whole file - it is the current state only), then CLAUDE.md, eye/ZONE_RULES.md and
-eye/ZONE_LIVE.md. The work now is section 1 of HANDOFF: the run-zone runner for LIVE - finish the spec's open points,
-then bring the uncommitted code to the spec (a developer builds, Sol reviews until clean), then the replay, the full
-suite, the commits. Documents hold only what is used - no history. Record every result when it is measured.
+eye/ZONE_LIVE.md. The work now is section 1 of HANDOFF: the zone runner is released and committed; the LIVE start
+waits for the account (check it, then start - my word is given), the paper runs beside it; then the trade journal
+page and the known defects. Documents hold only what is used - no history. Record every result when it is measured.
 ````
