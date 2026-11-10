@@ -1,20 +1,29 @@
 # Start here
 
 Everything built before 2026-10-28 is stopped and archived. This file, `docs/HOUSE_RULES.md` and
-`docs/HANDOFF.md` are the whole live document set; the work itself lives in `eye/`. **`docs/HANDOFF.md`
-is where a new session starts**: it carries the current numbers, where the walking resumes, and what is
-still open.
+`docs/HANDOFF.md` are the live document set beside the specifications in `eye/`. **`docs/HANDOFF.md`
+is where a new session starts**: it carries the current state and what is still open.
+
+## The work now: the run-zone setup
+
+Since 2026-11-01 the work is **the owner's run zones** (`eye/METHOD.md` 2e, the row "The run zones"): equal
+zones a run apart on gold, orders resting at the zone lines. Its rules are `eye/ZONE_RULES.md` (the setup and
+its simulation, `eye/zone_bot.py`; the logic in `app/zone/core.py`) and `eye/ZONE_LIVE.md` (the runner that
+trades it on the MT5 account, `app/zone/trader.py`, `python -m app.cli zone run`). Every measurement of it is in
+`eye/BOT_RESEARCH.md`; where it stands - the release, the LIVE start, the paper run beside it - is in
+`docs/HANDOFF.md`, section 1. The sections below describe the work before it: the trades read by eye and the
+Fibonacci bot, both paused (HANDOFF, section 2).
 
 ## What this repository is now
 
 | | |
 |---|---|
-| **The work** | `eye/` - learning to trade gold by eye, a hundred hand-read trades, recorded one by one |
-| **The raw material** | bar and tick history in `data/history` and `data/ticks`, and the indicator primitives in `app/indicators` - nothing above them is in use |
-| **The machine** | `app/` still builds and its tests pass, but **no strategy is enabled in `config.yaml`**, in any lane. A started engine sends no order |
+| **The work** | `eye/` and `app/zone` - the run-zone setup (above); before it, learning to trade gold by eye, hand-read trades recorded one by one |
+| **The raw material** | bar and tick history in `data/history` and `data/ticks`, and the indicator primitives in `app/indicators` |
+| **The machine** | `app/` still builds and its tests pass, but **no strategy is enabled in `config.yaml`**, in any lane: a started engine sends no order. Only the zone runner (`app/zone`) sends orders, started on the owner's word |
 | **The record of what was tried** | `docs/archive/README.md` and `research/archive/` - **old data: it never decides the present** (owner, 2026-10-28), a record so the same ground is not covered twice |
 
-## What we are doing
+## What we are doing (the by-eye work, paused)
 
 Watch price, find an entry that has an edge, enter on a timeframe and exit on that timeframe. No
 indicators. The owner, 2026-10-28:
@@ -68,7 +77,7 @@ at the earlier snapshot of twelve (-0.378 R a trade); all backwards, none decide
 `eye/LESSONS.md` keeps all three honest; `eye/TRIED.md` carries the verdict on every method tried, including
 the ones that failed.
 
-The method being run now is **real trading days, one at a time** (`eye/METHOD.md` section 2c): a date
+The by-eye method, when it is taken up again, is **real trading days, one at a time** (`eye/METHOD.md` section 2c): a date
 taken whole, all three of the owner's windows walked in order, every window written into
 `eye/sessions.csv` whether it produced a trade or not. **Four days are done - 2026-04-01, 04-02, 04-06
 and 04-07 (03/04 was Good Friday): twelve windows walked** (the first two days: six windows, four with no
@@ -81,7 +90,7 @@ in a trend), is **on hold**: the owner said it is not their way, and it never ra
 10-28 - in the nine rules, then in 2e and its tools, each reviewed by Claude and Codex apart - and what
 was fixed are in `eye/RULES_REVIEW.md`.
 
-**A bot applies the owner's setup** (`eye/bot2e.py`), on closed bars only, inside the owner's windows, with
+**The Fibonacci bot applies the owner's setup** (`eye/bot2e.py`; paused since 2026-11-01), on closed bars only, inside the owner's windows, with
 the owner's reward floor of 1:2. **Its rules in force are `eye/BOT_RULES.md`** - the owner's Fibonacci (`eye/METHOD.md`
 2e). The first version, 2e's break-and-retest entry, made no trade in October
 2026; the Fibonacci rounds and the runs of the build before rule 11 was rewritten are in `eye/BOT_RESEARCH.md` (the October run of commit 613f00f, before

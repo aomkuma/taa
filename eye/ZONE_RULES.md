@@ -18,10 +18,12 @@ and any number inside one, is never a rule.
   database table of that bot is used, changed or imported, and that bot does not import this one. Shared only:
   the stored bars (`data/history/FBS-Demo/XAUUSD`), `app.indicators.chart_read.zigzag_pivots`, and the database
   *file* `data/bot_config.db` (a table of its own, rule 1).
-- **Files**: `eye/zone_bot.py` (the setup, a run on stored bars), `eye/zone_config.py` (its parameters, rule 1),
-  `tests/unit/test_zone_bot.py` and `tests/unit/test_zone_config.py`; outputs under `eye/research/zone/` (rule 11).
-- **No order is sent anywhere.** It is a simulation on stored bars, like the reference. DEMO / LIVE are not part of
-  this build and need the owner's word.
+- **Files**: the logic in `app/zone/core.py` and the parameters in `app/zone/params.py` (`eye/ZONE_LIVE.md` L0);
+  `eye/zone_bot.py` (the command line of a run on stored bars, its outputs and charts) and `eye/zone_config.py` (the
+  parameters' command line, rule 1) import them; `tests/unit/test_zone_bot.py` and `tests/unit/test_zone_config.py`;
+  outputs under `eye/research/zone/` (rule 11).
+- **This file's setup sends no order**: it is a simulation on stored bars, like the reference. Trading it on the
+  broker account is `eye/ZONE_LIVE.md` (the runner), started only on the owner's word.
 
 ## Words used
 

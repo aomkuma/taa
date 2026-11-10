@@ -33,8 +33,9 @@ terminal. On 2026-10-28 the owner stopped and archived all of it - every setup, 
 knowledge base and the working method - keeping the raw data and the indicator primitives, to be put
 together again.
 
-So the code still builds and its tests pass, but **no strategy is enabled in `config.yaml`, in any lane.**
-A started engine sends no order. DEMO and the hourly observer are disabled in Task Scheduler. The LIVE gate
+So the old code still builds and its tests pass, but **no strategy is enabled in `config.yaml`, in any lane.**
+A started engine sends no order. **The one thing that sends orders is the run-zone runner** (`app/zone`,
+`python -m app.cli zone run`; `eye/ZONE_LIVE.md`), released 2026-11-10 - its state is in HANDOFF. DEMO and the hourly observer are disabled in Task Scheduler. The LIVE gate
 in `.env` is open (set on the owner's word, 2026-11-04, for the zone runner - HANDOFF); nothing is started on LIVE
 without the owner's explicit word.
 
@@ -61,6 +62,16 @@ The eye work:
 .venv\Scripts\python eye/bot_config.py seed --market XAUUSD --set default --by <who>   # once: the bot's parameters (data/bot_config.db)
 .venv\Scripts\python eye/bot2e.py --from 2026-04-06 --to 2026-04-07 [--set default]   # the bot, bar by bar (eye/BOT_RULES.md)
 .venv\Scripts\python eye/score.py bot_ledger.csv; .venv\Scripts\python eye/money.py --ledger bot_ledger.csv
+```
+
+The run-zone setup (`eye/ZONE_RULES.md`, `eye/ZONE_LIVE.md`):
+
+```powershell
+.venv\Scripts\python eye/zone_bot.py [--start 2023-10-01] [--end ...]        # the simulation on stored bars (FBS-Demo)
+.venv\Scripts\python eye/zone_paper.py [--update] [--since "2026-11-10 12:00"] # paper beside LIVE (FBS-Real bars)
+.venv\Scripts\python -m app.cli zone status                                  # the runner: account, setup, orders
+.venv\Scripts\python -m app.cli zone run --market XAUUSD --set default       # SENDS ORDERS in the mode of .env - the owner's word only
+.venv\Scripts\python -m app.cli zone stop [--now]                            # stop it (Ctrl+C in its window = stop)
 ```
 
 The method is **real trading days, one at a time** (`eye/METHOD.md` 2c): a date taken whole, the owner's

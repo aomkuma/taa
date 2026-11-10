@@ -8,18 +8,22 @@ trading, advisory signals and a PWA dashboard.
 > backtests describe the past and are no forecast. Leveraged FX/CFD trading carries a high risk of loss.
 > LIVE (real money) is off by default.
 
+> **State, 2026-11-10**: everything below the Documentation section describes the platform built before
+> 2026-10-28, which the owner stopped and archived - it still builds and its tests pass, with no strategy
+> enabled. The work now is the run-zone setup and its runner (`eye/ZONE_RULES.md`, `eye/ZONE_LIVE.md`,
+> `app/zone`).
+
 ## Documentation
 
-- [docs/PLAN.md](docs/PLAN.md): architecture and design (risk model, breakers, sync, PWA, advisory, AI).
-- [docs/TICKETS.md](docs/TICKETS.md): tickets, checklists and progress.
-- [docs/HANDOFF.md](docs/HANDOFF.md): current state and the prompt for resuming in a new session.
-- [docs/RUNBOOK_DEMO.md](docs/RUNBOOK_DEMO.md): broker orders on the demo account, the two-week soak.
-- [docs/RUNBOOK_LIVE.md](docs/RUNBOOK_LIVE.md): the go-live checklist, drills, start/stop and back to safety.
-- [docs/SECURITY_REVIEW.md](docs/SECURITY_REVIEW.md): the review before LIVE (threats, audits, secrets).
-- [docs/CODING_STANDARDS.md](docs/CODING_STANDARDS.md): coding conventions (commands in [CLAUDE.md](CLAUDE.md)).
-- [docs/STRATEGIES.md](docs/STRATEGIES.md), [docs/PATTERNS.md](docs/PATTERNS.md),
-  [docs/INDICATORS.md](docs/INDICATORS.md), [docs/ADVISORY.md](docs/ADVISORY.md),
-  [docs/COMPLIANCE.md](docs/COMPLIANCE.md).
+- [docs/HANDOFF.md](docs/HANDOFF.md): the current state and the prompt for resuming in a new session.
+- [docs/START_HERE.md](docs/START_HERE.md): what this repository is now.
+- [docs/HOUSE_RULES.md](docs/HOUSE_RULES.md) and [CLAUDE.md](CLAUDE.md): how to work here, the commands.
+- [eye/ZONE_RULES.md](eye/ZONE_RULES.md), [eye/ZONE_LIVE.md](eye/ZONE_LIVE.md): the run-zone setup and its
+  runner on the broker account.
+- [eye/METHOD.md](eye/METHOD.md), [eye/BOT_RULES.md](eye/BOT_RULES.md),
+  [eye/BOT_RESEARCH.md](eye/BOT_RESEARCH.md): the owner's method, the Fibonacci bot (paused), every measurement.
+- [docs/archive/README.md](docs/archive/README.md): the old platform's documents (the plan, the tickets, the
+  DEMO and LIVE runbooks, the security review, the coding standards) - old data, never a reason for anything now.
 
 ## Topology (short)
 
@@ -36,8 +40,8 @@ trading, advisory signals and a PWA dashboard.
 |---|---|---|
 | BACKTEST | simulated | `python -m app.cli backtest …` |
 | PAPER | simulated book next to the real account | the investor password is enough |
-| DEMO | real orders on a demo account | `ENABLE_DEMO_TRADING=true`, a DEMO account — [RUNBOOK_DEMO](docs/RUNBOOK_DEMO.md) |
-| LIVE | real money | `ENABLE_LIVE_TRADING=true`, `LIVE_TRADING_CONFIRMATION=I-ACCEPT-LIVE-RISK-<login>`, a REAL account, the [go-live checklist](docs/RUNBOOK_LIVE.md) |
+| DEMO | real orders on a demo account | `ENABLE_DEMO_TRADING=true`, a DEMO account |
+| LIVE | real money | `ENABLE_LIVE_TRADING=true`, `LIVE_TRADING_CONFIRMATION=I-ACCEPT-LIVE-RISK-<login>`, a REAL account, the owner's word |
 
 Risk: `config.yaml` → `risk` is the engine machine's cage; the owner's Trading profile in the PWA sets the
 values used inside it, and its "Splitting an entry" plan decides how the bot enters (one order, several at
@@ -54,7 +58,7 @@ copy .env.example .env    # then fill in values; never commit .env
 .venv\Scripts\python -m pytest
 scripts\start-demo.cmd    # web + worker + a FakeMT5 PAPER engine (once: scripts\start-demo.ps1 -Setup -Owner NAME)
 scripts\start-demo.cmd -Mt5   # the same on the real MT5 terminal (PAPER), http://localhost:8001
-scripts\start-demo.cmd -Mt5 -Demo   # real orders on the demo account (docs/RUNBOOK_DEMO.md)
+scripts\start-demo.cmd -Mt5 -Demo   # real orders on the demo account
 ```
 
 FakeMT5 is pure Python and cannot reproduce every quirk of the real `MetaTrader5` module (on 2026-10-06 every
