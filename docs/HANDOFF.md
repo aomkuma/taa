@@ -46,6 +46,9 @@ trading run. Tests green means the code matches the spec, never "passed".
     a bar (Sol, spec review of "Market closed", P2) - a holiday or session rule in Words;
   - when an owed interruption has nothing left to interrupt, `_decide` runs before `_manage` clears the latch, so the
     decision waits one cycle (2 s live).
+  - the replay double (Sol's code review 13, P2): a cycle just past the stale deadline can still be skipped
+    (`tests/zone_replay.py:825`), and an hour left undecided during a multi-hour catch-up escapes `undecided_hours`
+    (`:771`) - the runner logs both at WARNING, so every WARNING line of a replay is read by hand until they are fixed.
 - **2026-03 M15 tick replay on the release code (2026-11-09 21:25; scratchpad `replay_rel1_m15_tick.txt`): the
   gate says PASS - 46 / 46 visits, 7 / 7 setups matched in every field, 2774 s - but 14 WARNING lines, where the last
   PASS (before review 5's fixes) had none**: 10 hours undecided at the daily reopening (22:00 UTC on 03-16 .. 03-31,
@@ -58,8 +61,8 @@ trading run. Tests green means the code matches the spec, never "passed".
   after each DST change the break was taken for an open market, the stale data latched, and the latch blocked the
   reopening's decision; the replay double then skipped the cycles of the 60 s window. Setup 208's line is a normal
   rule-3 cancellation. **Fixed in the spec** (the history in New York time; the stored H1 misses 17:00 New York on 645
-  Monday - Thursday days, the rest holidays; Sol: no other finding); the code and the harness's L11 check of undecided
-  hours being built.
+  Monday - Thursday days, the rest holidays; Sol: no other finding); built (trader.py cb70dbf2, the harness's L11 check of
+  undecided hours, stale removals and interruptions); Sol's code review 13: no P1.
 - **Next**: the cause found and fixed, Sol's review, the replay again -> poll -> the full suite once -> commit ->
   the owner judges the charts (below) -> LIVE only on the owner's word.
 - **The replay scope (the owner, 2026-11-07)**: one month, 2026-03, with the set's `exec_tf` M15 - *"if one month
