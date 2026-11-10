@@ -456,6 +456,13 @@ engine:
   monitor_interval_seconds: 1.0
   health_port: 8765
 
+zone_live:                          # the run-zone runner (eye/ZONE_LIVE.md L9); its zone parameters are in data/bot_config.db
+  lot: 0.01                         # owner, 2026-11-02: 0.01 a position, fixed
+  cycle_seconds: 2
+  stale_quote_seconds: 30
+  preclose_seconds: 15
+  epoch: 2023-10-01                 # the line arming starts from the closed H1 bars of this date
+
 sync:
   enabled: false                    # the repository default; a paired machine sets SYNC_ENABLED=true in
                                     # its own .env (env overrides yaml), as this one does since 2026-10-27

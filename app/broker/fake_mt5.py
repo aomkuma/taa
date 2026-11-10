@@ -292,6 +292,7 @@ class FakeMT5:
     ORDER_TYPE_BUY_LIMIT, ORDER_TYPE_SELL_LIMIT = c.ORDER_TYPE_BUY_LIMIT, c.ORDER_TYPE_SELL_LIMIT
     TRADE_ACTION_DEAL, TRADE_ACTION_SLTP = c.TRADE_ACTION_DEAL, c.TRADE_ACTION_SLTP
     TRADE_ACTION_PENDING, TRADE_ACTION_REMOVE = c.TRADE_ACTION_PENDING, c.TRADE_ACTION_REMOVE
+    TRADE_ACTION_MODIFY = c.TRADE_ACTION_MODIFY
     ORDER_FILLING_FOK, ORDER_FILLING_IOC, ORDER_FILLING_RETURN = 0, 1, 2
     ORDER_TIME_GTC, ORDER_TIME_SPECIFIED = c.ORDER_TIME_GTC, c.ORDER_TIME_SPECIFIED
     COPY_TICKS_ALL, COPY_TICKS_INFO, COPY_TICKS_TRADE = (
@@ -324,6 +325,7 @@ class FakeMT5:
         self.calls: Counter[str] = Counter()
         self.positions: list[SimpleNamespace] = []
         self.orders: list[SimpleNamespace] = []  # resting pending orders
+        self.history_orders: list[SimpleNamespace] = []  # orders that left the book, final state
         self.deals: list[SimpleNamespace] = []
         self.selected: set[str] = set()
         self._failures: dict[str, _Failure] = {}
@@ -499,6 +501,7 @@ class FakeMT5:
             trade_exemode=sym.execution_mode,
             swap_mode=1,
             swap_rollover3days=3,
+            expiration_mode=15 if sym.pending_expiration else 1,
             filling_mode=sym.filling_mode,
             order_mode=127,
             bid=bid,
@@ -806,6 +809,14 @@ class FakeMT5:
         lo = _as_epoch(date_from) + self.server_clock.expected_offset_seconds()
         hi = _as_epoch(date_to) + self.server_clock.expected_offset_seconds()
         return tuple(d for d in self.deals if lo <= d.time <= hi)
+
+    def history_orders_get(self, date_from: Any, date_to: Any) -> tuple[Any, ...] | None:
+        if not self._enter("history_orders_get"):
+            return None
+        self.desk.refresh()
+        lo = _as_epoch(date_from) + self.server_clock.expected_offset_seconds()
+        hi = _as_epoch(date_to) + self.server_clock.expected_offset_seconds()
+        return tuple(o for o in self.history_orders if lo <= o.time_done <= hi)
 
     def order_calc_profit(
         self, action: int, symbol: str, volume: float, price_open: float, price_close: float

@@ -58,6 +58,9 @@ class SymbolSpec:
     calc_mode: int
     path: str = ""
     swap_mode: int = c.SYMBOL_SWAP_MODE_UNKNOWN
+    expiration_mode: int = (
+        15  # SYMBOL_EXPIRATION_* bitmask (all four: 1 GTC, 2 DAY, 4 SPECIFIED, 8 SPEC. DAY)
+    )
 
     @property
     def can_buy(self) -> bool:

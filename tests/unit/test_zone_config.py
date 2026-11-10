@@ -18,6 +18,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
+from app.zone import params as zp  # noqa: E402
 from eye import zone_config as zc  # noqa: E402
 from eye.zone_config import ConfigError, ZoneParams  # noqa: E402
 
@@ -548,7 +549,7 @@ def test_a_failure_mid_write_rolls_everything_back(db: Path, monkeypatch: pytest
             self.con.close()
 
     real_connect = sqlite3.connect
-    monkeypatch.setattr(zc.sqlite3, "connect", lambda *a, **k: Flaky(real_connect(*a, **k)))
+    monkeypatch.setattr(zp.sqlite3, "connect", lambda *a, **k: Flaky(real_connect(*a, **k)))
     with pytest.raises(RuntimeError):
         zc.set_values(db, "XAUUSD", "default", "t", AT2, "n", {"abn_atr": "2.5", "order_life_h": "24"})
     assert real_execute_calls["n"] == 2
@@ -620,7 +621,7 @@ def test_load_params_reads_values_and_version_from_one_snapshot(
     db: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     v0 = _seeded(db)
-    real_open = zc._open_ro
+    real_open = zp._open_ro
     fired: list[int] = []
 
     class Rows:
@@ -648,7 +649,7 @@ def test_load_params_reads_values_and_version_from_one_snapshot(
         def close(self) -> None:
             self.con.close()
 
-    monkeypatch.setattr(zc, "_open_ro", lambda *a, **k: Hooked(real_open(*a, **k)))
+    monkeypatch.setattr(zp, "_open_ro", lambda *a, **k: Hooked(real_open(*a, **k)))
     p, version = zc.load_params(db, "XAUUSD", "default")
     assert fired == [v0 + 1]  # the write really landed between the reader's statements
     # one coherent commit: either the old values with the old version, or the new with the new
@@ -781,7 +782,7 @@ def test_fibonacci_table_untouched_by_every_cli_command(
         c.set_trace_callback(statements.append)
         return c
 
-    monkeypatch.setattr(zc.sqlite3, "connect", traced)
+    monkeypatch.setattr(zp.sqlite3, "connect", traced)
     base = ["--db", str(db)]
     sm = ["--market", "XAUUSD", "--set", "default"]
     cmds = [
@@ -943,7 +944,7 @@ def test_upgrade_runs_between_begin_immediate_and_commit(db: Path, monkeypatch: 
         c.set_trace_callback(stmts.append)
         return c
 
-    monkeypatch.setattr(zc.sqlite3, "connect", spy)
+    monkeypatch.setattr(zp.sqlite3, "connect", spy)
     zc.upgrade(db, "XAUUSD", "default", "t", AT2)
     begin = stmts.index("BEGIN IMMEDIATE")
     read = next(i for i, x in enumerate(stmts) if "FROM zone_config_change c" in x)  # the set is read ...
@@ -962,3 +963,11 @@ def test_upgrade_command_line(db: Path, capsys: pytest.CaptureFixture[str]) -> N
     assert "nothing to upgrade" in capsys.readouterr().err
     assert zc.main(["show", "--market", "XAUUSD", "--set", "default", "--db", str(db)]) == 0
     assert "be_mode=entry" in capsys.readouterr().out
+
+
+def test_app_zone_imports_nothing_of_eye_or_the_fibonacci_bot() -> None:
+    for path in sorted((ROOT / "app" / "zone").glob("*.py")):
+        names = _imports(path)
+        assert names & {"eye", "bot2e", "bot_config", "bot_research", "zone_bot", "zone_config"} == set(), (
+            path
+        )

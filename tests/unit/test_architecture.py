@@ -49,6 +49,7 @@ LAYERS: dict[str, int] = {
     "app.evidence": 5,
     # 6: strategies
     "app.strategy": 6,
+    "app.zone": 6,  # the run-zone setup's pure logic and parameters (like strategies)
     # 7: risk and the decision pipeline
     "app.risk": 7,
     "app.engine.decision_engine": 7,
@@ -63,6 +64,8 @@ LAYERS: dict[str, int] = {
     "app.monitoring": 9,
     # 10: engine runtime and sync
     "app.engine": 10,
+    "app.zone.store": 10,  # the run-zone runner's state store
+    "app.zone.trader": 10,  # the run-zone real-time runner
     "app.sync": 10,
     # 11: cloud processes
     "app.web": 11,

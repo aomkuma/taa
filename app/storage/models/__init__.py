@@ -60,6 +60,13 @@ from app.storage.models.web import (
     UserRow,
 )
 from app.storage.models.worker import WorkerHeartbeatRow, WorkerJobRow, WorkerScheduleRow
+from app.storage.models.zone import (
+    ZoneLiveRequestRow,
+    ZoneLiveSetupRow,
+    ZoneLiveStateRow,
+    ZoneLiveStopRow,
+    ZoneLiveVisitRow,
+)
 
 __all__ = [
     "AIAssessmentRow",
@@ -122,5 +129,10 @@ __all__ = [
     "WorkerHeartbeatRow",
     "WorkerJobRow",
     "WorkerScheduleRow",
+    "ZoneLiveRequestRow",
+    "ZoneLiveSetupRow",
+    "ZoneLiveStateRow",
+    "ZoneLiveStopRow",
+    "ZoneLiveVisitRow",
     "utcnow",
 ]

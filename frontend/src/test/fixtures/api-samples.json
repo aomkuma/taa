@@ -8387,8 +8387,8 @@
       "preset": "standard",
       "provenance": {
         "code_version": "0.1.0",
-        "config_hash": "669992da4b9216a0",
-        "data_hash": "b105ee49b0ca6f5ea6824daf25c3c4ab",
+        "config_hash": "883f869c54f98ba0",
+        "data_hash": "9517f50ee6ee2277a98013e4ae1ee14a",
         "detectors": [],
         "seed": 42,
         "strategies": [
@@ -8514,8 +8514,8 @@
         "preset": "standard",
         "provenance": {
           "code_version": "0.1.0",
-          "config_hash": "669992da4b9216a0",
-          "data_hash": "b105ee49b0ca6f5ea6824daf25c3c4ab",
+          "config_hash": "883f869c54f98ba0",
+          "data_hash": "9517f50ee6ee2277a98013e4ae1ee14a",
           "detectors": [],
           "seed": 42,
           "strategies": [
@@ -8570,8 +8570,8 @@
         "preset": "high_costs",
         "provenance": {
           "code_version": "0.1.0",
-          "config_hash": "669992da4b9216a0",
-          "data_hash": "b105ee49b0ca6f5ea6824daf25c3c4ab",
+          "config_hash": "883f869c54f98ba0",
+          "data_hash": "9517f50ee6ee2277a98013e4ae1ee14a",
           "detectors": [],
           "seed": 42,
           "strategies": [
@@ -9926,6 +9926,14 @@
           "refinement": null,
           "stale_tick_seconds": 120.0,
           "warmup_bars": 400
+        },
+        "zone_live": {
+          "cycle_seconds": 2.0,
+          "epoch": "2023-10-01",
+          "lot": 0.01,
+          "preclose_seconds": 15.0,
+          "stale_quote_seconds": 30.0,
+          "symbol": "XAUUSD"
         }
       },
       "config_hash": "cccccccccccccccccccccccccccccccc",
@@ -16448,6 +16456,7 @@
       "description": "Euro vs US Dollar",
       "digits": 5,
       "execution_mode": 2,
+      "expiration_mode": 15,
       "filling_mode": 1,
       "freeze_level": 0,
       "name": "EURUSD",

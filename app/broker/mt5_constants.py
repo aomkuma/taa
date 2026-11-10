@@ -29,6 +29,7 @@ ORDER_TYPE_SELL_LIMIT = 3
 TRADE_ACTION_DEAL = 1
 TRADE_ACTION_PENDING = 5
 TRADE_ACTION_SLTP = 6
+TRADE_ACTION_MODIFY = 7  # change a resting order's price / SL / TP / expiration
 TRADE_ACTION_REMOVE = 8
 
 # Order filling (request field type_filling)
@@ -39,6 +40,24 @@ ORDER_FILLING_BOC = 3
 
 ORDER_TIME_GTC = 0
 ORDER_TIME_SPECIFIED = 2  # the order expires at the request's "expiration" (server time)
+
+# ENUM_ORDER_STATE (history_orders_get: what became of an order)
+ORDER_STATE_STARTED = 0
+ORDER_STATE_PLACED = 1
+ORDER_STATE_CANCELED = 2
+ORDER_STATE_PARTIAL = 3
+ORDER_STATE_FILLED = 4
+ORDER_STATE_REJECTED = 5
+ORDER_STATE_EXPIRED = 6
+ORDER_STATE_REQUEST_ADD = 7
+ORDER_STATE_REQUEST_MODIFY = 8
+ORDER_STATE_REQUEST_CANCEL = 9
+
+# symbol_info().expiration_mode bitmask: which order expirations the symbol allows
+SYMBOL_EXPIRATION_GTC = 1
+SYMBOL_EXPIRATION_DAY = 2
+SYMBOL_EXPIRATION_SPECIFIED = 4
+SYMBOL_EXPIRATION_SPECIFIED_DAY = 8
 
 # Symbol filling flags (symbol_info().filling_mode bitmask)
 # ENUM_SYMBOL_SWAP_MODE (-1: unknown, e.g. a spec stored before the field existed)

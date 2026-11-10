@@ -89,6 +89,27 @@ class BrokerOrder:
 
 
 @dataclass(frozen=True, slots=True)
+class HistoryOrder:
+    """An order in the broker's history: what became of it (``state``: ORDER_STATE_*)."""
+
+    ticket: int
+    position_id: int
+    symbol: str
+    type: int  # ORDER_TYPE_*
+    state: int  # ORDER_STATE_*
+    volume_initial: float
+    volume_current: float
+    price_open: float
+    sl: float
+    tp: float
+    magic: int
+    comment: str
+    time_setup_utc: datetime
+    time_done_utc: datetime | None
+    expiration_utc: datetime | None
+
+
+@dataclass(frozen=True, slots=True)
 class BrokerPosition:
     ticket: int
     symbol: str

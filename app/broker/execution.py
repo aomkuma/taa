@@ -22,7 +22,7 @@ from typing import Any
 
 from app.broker import mt5_constants as c
 from app.broker.filling import resolve_filling
-from app.broker.models import BrokerPosition
+from app.broker.models import BrokerOrder, BrokerPosition
 from app.broker.mt5_client import MT5Client
 from app.broker.retcodes import RetcodeClass, classify, describe
 from app.core.decimal_utils import round_to_tick
@@ -157,6 +157,29 @@ class RequestBuilder:
     def remove_order(ticket: int) -> dict[str, Any]:
         """Delete a resting order (an unfilled limit part)."""
         return {"action": c.TRADE_ACTION_REMOVE, "order": int(ticket)}
+
+    def modify_order(
+        self,
+        spec: SymbolSpec,
+        order: BrokerOrder,
+        *,
+        expiration_server: int,
+    ) -> dict[str, Any]:
+        """Change a resting order's expiration only (``TRADE_ACTION_MODIFY``): the same price, SL and TP, the
+        new expiration, ``ORDER_TIME_SPECIFIED`` (ZONE_LIVE L3)."""
+        if order.sl <= 0:
+            raise SafetyViolation("every entry needs a stop-loss")
+        return {
+            "action": c.TRADE_ACTION_MODIFY,
+            "order": int(order.ticket),
+            "symbol": spec.name,
+            "price": self._price(spec, order.price_open),
+            "sl": self._price(spec, order.sl),
+            "tp": 0.0 if not order.tp else self._price(spec, order.tp),
+            "type_time": c.ORDER_TIME_SPECIFIED,
+            "expiration": int(expiration_server),
+            "magic": int(order.magic),
+        }
 
     @classmethod
     def pending_fillings(cls, spec: SymbolSpec) -> list[int]:

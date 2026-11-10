@@ -12,7 +12,7 @@ import logging
 import math
 from collections.abc import Mapping
 from dataclasses import dataclass
-from datetime import datetime, time
+from datetime import date, datetime, time
 from pathlib import Path
 from typing import Any, Literal
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
@@ -958,6 +958,31 @@ class EngineLoopConfig(StrictModel):
         return value
 
 
+class ZoneLiveConfig(StrictModel):
+    """The run-zone runner's own settings (eye/ZONE_LIVE.md L9). The zone's parameters come from the zone
+    set in
+    ``data/bot_config.db``, not from here."""
+
+    lot: float = Field(default=0.01, gt=0, le=1.0, description="the fixed lot of every position (owner)")
+    cycle_seconds: float = Field(default=2.0, gt=0, le=30)
+    stale_quote_seconds: float = Field(
+        default=30.0, gt=0, le=600, description="no new order on an older quote"
+    )
+    preclose_seconds: float = Field(default=15.0, ge=0, le=120, description="the window before a bar's close")
+    epoch: date = Field(
+        default=date(2023, 10, 1), description="the line arming is computed from closed H1 bars from here"
+    )
+    symbol: Literal["XAUUSD"] = "XAUUSD"
+
+    @model_validator(mode="after")
+    def _window_inside_a_bar(self) -> ZoneLiveConfig:
+        if self.preclose_seconds >= 300:
+            raise ValueError("preclose_seconds must be shorter than the shortest bar (M5: 300 s)")
+        if self.cycle_seconds >= self.stale_quote_seconds:
+            raise ValueError("cycle_seconds must be shorter than stale_quote_seconds")
+        return self
+
+
 class AIConfig(StrictModel):
     """The optional AI review of entries (PLAN R21; TAA-1303). Provider, model and mode come from the env
     (``AI_PROVIDER``, ``AI_MODEL``, ``AI_MODE``); this section bounds what the AI may cost and when it
@@ -1128,6 +1153,7 @@ class AppConfig(StrictModel):
     engine: EngineLoopConfig = Field(default_factory=EngineLoopConfig)
     paper: PaperConfig = Field(default_factory=PaperConfig)
     execution: ExecutionConfig = Field(default_factory=ExecutionConfig)
+    zone_live: ZoneLiveConfig = Field(default_factory=ZoneLiveConfig)
     advisory: AdvisoryConfig = Field(default_factory=AdvisoryConfig)
     sync: SyncConfig = Field(default_factory=SyncConfig)
     ai: AIConfig = Field(default_factory=AIConfig)

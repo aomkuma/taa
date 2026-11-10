@@ -48,6 +48,8 @@ These rules fail the build when broken; they are not honor-system:
 | Wall clock | `datetime.now/utcnow`, `date.today` and `time.time` are allowed only in `app/core/clock.py` and ORM column defaults. Monotonic timers such as `time.perf_counter` are fine. |
 | Pure analysis | `app.indicators`, `app.evidence` and `app.strategy` never import broker services, storage, security or market-data services (layer-0 data models are fine), and never touch `EnvSettings`/`load_settings`/the environment/keyring. Strategies receive a `StrategyContext` of values only. |
 
+`LAYERS` also holds the run-zone package (2026-11-02, eye/ZONE_LIVE.md L0): `app.zone` is layer 6 (pure logic and parameters, like strategies - it may import `app.core` and `app.indicators`, nothing from `eye/` and nothing of the Fibonacci bot), and `app.zone.store` and `app.zone.trader` (the runner's state store and real-time runner, to be added) are layer 10, so they may import `app.broker`, `app.risk`, `app.storage`, `app.config` and `app.market_data`.
+
 A new package must be added to `LAYERS` (`test_every_app_module_has_a_layer` fails otherwise). Changing a layer or
 an allow-list is a design decision: change the test and this section together, and say why in the change.
 

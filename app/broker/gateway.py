@@ -15,7 +15,14 @@ import numpy as np
 import pandas as pd
 
 from app.broker import mt5_constants as c
-from app.broker.models import AccountSnapshot, BrokerOrder, BrokerPosition, Deal, TerminalSnapshot
+from app.broker.models import (
+    AccountSnapshot,
+    BrokerOrder,
+    BrokerPosition,
+    Deal,
+    HistoryOrder,
+    TerminalSnapshot,
+)
 from app.broker.mt5_client import MT5Client, account_from_raw, terminal_from_raw
 from app.core.clock import ServerClock, ensure_utc
 from app.core.enums import Side, Timeframe
@@ -101,6 +108,7 @@ def spec_from_raw(raw: Any) -> SymbolSpec:
         calc_mode=int(getattr(raw, "trade_calc_mode", 0)),
         path=str(getattr(raw, "path", "")),
         swap_mode=int(getattr(raw, "swap_mode", c.SYMBOL_SWAP_MODE_UNKNOWN)),
+        expiration_mode=int(getattr(raw, "expiration_mode", 15)),
     )
 
 
@@ -345,7 +353,10 @@ class ReadOnlyMT5Gateway:
             raise BrokerError(f"history_deals_get failed: {self.client.last_error()}")
         out = []
         for d in raw:
-            t = self.server_clock.server_epoch_to_utc(int(d.time))
+            # the deal's time to the millisecond (ZONE_LIVE L5 orders the deals by ``time_msc``); a record
+            # without it (the in-memory fake) keeps its whole-second ``time``
+            msc = int(getattr(d, "time_msc", 0) or 0) or int(d.time) * 1000
+            t = self.server_clock.server_epoch_to_utc(msc // 1000) + timedelta(milliseconds=msc % 1000)
             if not (ensure_utc(start_utc) <= t < ensure_utc(end_utc)):
                 continue
             out.append(
@@ -369,6 +380,47 @@ class ReadOnlyMT5Gateway:
                 )
             )
         return out
+
+    def history_orders(self, start_utc: datetime, end_utc: datetime) -> list[HistoryOrder]:
+        """Orders that left the book (filled, cancelled, expired, rejected) with their final state;
+        ``time_done``
+        in [start_utc, end_utc). The zone runner reads what became of an order from here (ZONE_LIVE L8)."""
+        lo = ensure_utc(start_utc) - _HISTORY_MARGIN
+        hi = ensure_utc(end_utc) + _HISTORY_MARGIN
+        raw = self.client.call("history_orders_get", int(lo.timestamp()), int(hi.timestamp()))
+        if raw is None:
+            raise BrokerError(f"history_orders_get failed: {self.client.last_error()}")
+        out = []
+        for o in raw:
+            done = int(getattr(o, "time_done", 0) or 0)
+            expires = int(getattr(o, "time_expiration", 0) or 0)
+            done_utc = self.server_clock.server_epoch_to_utc(done) if done else None
+            if done_utc is not None and not (ensure_utc(start_utc) <= done_utc < ensure_utc(end_utc)):
+                continue
+            out.append(
+                HistoryOrder(
+                    ticket=int(o.ticket),
+                    position_id=int(getattr(o, "position_id", 0)),
+                    symbol=str(o.symbol),
+                    type=int(o.type),
+                    state=int(o.state),
+                    volume_initial=float(getattr(o, "volume_initial", 0.0)),
+                    volume_current=float(getattr(o, "volume_current", 0.0)),
+                    price_open=float(o.price_open),
+                    sl=float(o.sl),
+                    tp=float(o.tp),
+                    magic=int(o.magic),
+                    comment=str(getattr(o, "comment", "")),
+                    time_setup_utc=self.server_clock.server_epoch_to_utc(int(o.time_setup)),
+                    time_done_utc=done_utc,
+                    expiration_utc=self.server_clock.server_epoch_to_utc(expires) if expires else None,
+                )
+            )
+        return out
+
+    def orders_by_comment(self, prefix: str, symbol: str | None = None) -> list[BrokerOrder]:
+        """Resting orders whose comment starts with *prefix* (recovery of an order of unknown outcome)."""
+        return [o for o in self.orders(symbol) if o.comment.startswith(prefix)]
 
     # ------------------------------------------------------------------- calculators
     def calc_profit(

@@ -1833,3 +1833,177 @@ def test_accept_case_4_setups_are_the_same_on_bars_cut_at_t(stored: zb.Bars, cut
                 assert (c.setup.be_j, c.setup.be_sl) == (s.be_j, s.be_sl)
             else:  # it went on after T (or never): not yet known at T
                 assert (c.setup.be_j, c.setup.be_sl) == (None, None)
+
+
+# --- the step function: one copy of a setup's bar-by-bar life (ZONE_LIVE L0) ---------------------------------
+
+
+def _life_loop(v: zb.Visit, ex: zb.ExecBars, params: ZoneParams, point: float) -> zb.Setup:
+    """The step function looped by hand, then the Setup assembled from the final state, with nothing of
+    ``simulate_setup`` in it: the two must give the same Setup."""
+    plan = zb.plan_setup(v, params)
+    life = zb.start_life(plan)
+    j = v.j0
+    while j < len(ex):
+        life = zb.step_setup(plan, life, j, zb.bar_values(ex, j, plan.per_h, point))
+        if life.status != "live":
+            break
+        j += 1
+    n = len(ex)
+    be_sl = life.cur_sl if life.be_on else None
+
+    def mk(o: str, end_j: int, xj: int | None, xp: float | None, how: str | None) -> zb.Setup:
+        return zb.Setup(
+            v, plan.p1, plan.p2, plan.sl, plan.tp, o, life.fills, xj, xp, how, end_j,
+            ex.close_time.iloc[end_j], be_sl, life.be_j,
+        )  # fmt: skip
+
+    if life.status == "cancel":
+        return mk("cancel", j, None, None, None)
+    if life.status == "exit":
+        return mk("traded", j, j, life.exit_price, life.how)
+    if life.status == "withdrawn":
+        return mk("no fill", j, None, None, None)
+    if not life.fills:
+        return mk("pending", n - 1, None, None, None)
+    return mk("traded", n - 1, n - 1, float(ex.close[n - 1]), "open")
+
+
+def _bars_for_steps(
+    rows: list[tuple[float, float, float, float]], per_h: int, hist: tuple[float, float, float, float]
+) -> zb.ExecBars:
+    """per_h bars of ``hist`` (the hour before the visit) then the given (open, high, low, close) rows."""
+    allr = [hist] * per_h + rows
+    n = len(allr)
+    ct = pd.Series(pd.date_range("2025-01-06", periods=n, freq="15min", tz="UTC") + pd.Timedelta(minutes=15))
+    return zb.ExecBars(
+        np.array([r[0] for r in allr]),
+        np.array([r[1] for r in allr]),
+        np.array([r[2] for r in allr]),
+        np.array([r[3] for r in allr]),
+        np.array([10.0] * n),
+        ct,
+    )
+
+
+def _visit_for_steps(sgn: int, j0: int) -> zb.Visit:
+    return zb.Visit(
+        pd.Timestamp("2025-01-06", tz="UTC"), 0, "BUY" if sgn > 0 else "SELL", sgn, 100.0, 10.0, 90.0, 1.3,
+        100.0, 0.0, 1.0, 0.0, 0.0, 1.0, (False,) * 4, 1.0, j0, j0, 0.0,
+    )  # fmt: skip
+
+
+@pytest.mark.parametrize("params", [ZoneParams(be_mode="off", exec_tf="M15"), ZoneParams(exec_tf="M15")])
+@pytest.mark.parametrize("sgn", [1, -1])
+def test_the_step_function_looped_equals_simulate_setup(sgn: int, params: ZoneParams) -> None:
+    per_h = zb.PER_H["M15"]  # 4: the visit's bar j0 is row 4
+    # a BUY line at 100, S = 10: P1 = 100 + 100/76 (above the line), P2 = 100 - 150/76, SL 95, TP 110; a SELL
+    # mirrors them around 100. The spread of every bar is 10 points x 0.01 = 0.1.
+    m = float(sgn)
+    j0 = per_h
+    p1, p2 = 100.0 + m * 100 / 76, 100.0 - m * 150 / 76
+
+    def px(x: float) -> float:
+        return 100.0 + m * (x - 100.0)
+
+    def bar(o: float, h: float, lo: float, c: float) -> tuple[float, float, float, float]:
+        a, b, c1, d = (px(x) for x in (o, h, lo, c))
+        return (a, max(b, c1), min(b, c1), d)
+
+    base = bar(103.0, 103.4, 102.6, 103.0)  # above P1 and under the away distance: nothing happens
+    touch = bar(103.0, 103.4, 101.0, 102.0)  # P1 fills here
+    # name: (rows, history bar, fills [(name, row offset from j0, price)], exit (offset, price) | None,
+    #        how, outcome, end row offset)
+    cases: dict[str, tuple[Any, ...]] = {
+        "expired": ([base] * (params.order_life_h * per_h + 3), base, [], None, None, "no fill", 192),
+        "moved away": ([base, bar(103.0, 106.0, 102.6, 104.0), base], base, [], None, None, "no fill", 1),
+        "P1 then the TP": (
+            [base, touch, bar(102.0, 111.0, 101.5, 110.5), base],
+            base,
+            [("P1", 1, p1)],
+            (2, px(110.0)),
+            "TP",
+            "traded",
+            2,
+        ),
+        "P1 and P2 on later bars, then the SL": (
+            [touch, bar(102.0, 102.0, 97.9, 98.0), bar(98.0, 98.2, 94.0, 94.5), base],
+            base,
+            [("P1", 0, p1), ("P2", 1, p2)],
+            (2, px(95.0)),
+            "SL",
+            "traded",
+            2,
+        ),
+        "P1 and P2 in one bar": (
+            [bar(103.0, 103.4, 97.9, 98.0), bar(98.0, 98.2, 94.0, 94.5), base],
+            base,
+            [("P1", 0, p1), ("P2", 0, p2)],
+            (1, px(95.0)),
+            "SL",
+            "traded",
+            1,
+        ),
+        "open at the end": ([touch, base, base], base, [("P1", 0, p1)], (2, px(103.0)), "open", "traded", 2),
+        "the TP not on the fill bar": (
+            [bar(103.0, 111.0, 101.0, 110.5), bar(110.5, 111.0, 109.0, 110.5), base],
+            base,
+            [("P1", 0, p1)],
+            (1, px(110.0)),
+            "TP",
+            "traded",
+            1,
+        ),
+        "fill-moment cancel": (
+            [base, touch, base],
+            bar(105.5, 105.9, 105.1, 105.5),
+            [],
+            None,
+            None,
+            "cancel",
+            1,
+        ),
+        "closed-hour cancel": ([base, base], bar(107.0, 107.4, 102.6, 103.0), [], None, None, "cancel", 0),
+    }
+    if params.be_mode == "entry":
+        # the break-even goes on at row 1 (the bar after the fill reaches half way to the TP, 105.66); its stop
+        # is the average fill + the spread of that bar; row 2 reaches P2 but it is cancelled, then the stop
+        cases["break-even then its stop"] = (
+            [touch, bar(102.0, 106.0, 101.5, 105.0), bar(105.0, 105.0, 97.9, 100.0), base],
+            base,
+            [("P1", 0, p1)],
+            (2, p1 + m * 0.1),
+            "BE",
+            "traded",
+            2,
+        )
+    for name, (rows, hist, fills, ext, how, outcome, end_off) in cases.items():
+        ex = _bars_for_steps(rows, per_h, hist)
+        v = _visit_for_steps(sgn, j0)
+        a = zb.simulate_setup(v, ex, params, 0.01)
+        b = _life_loop(v, ex, params, 0.01)
+        assert a == b, name
+        assert a.outcome == outcome and a.how == how, (name, a.outcome, a.how)
+        assert [(f.name, f.j, f.price) for f in a.fills] == [
+            (n, j0 + o, pytest.approx(pr, abs=1e-9)) for n, o, pr in fills
+        ], name
+        assert a.end_j == j0 + end_off, name
+        if ext is None:
+            assert a.exit_j is None and a.exit_price is None, name
+        else:
+            assert a.exit_j == j0 + ext[0] and a.exit_price == pytest.approx(ext[1], abs=1e-9), name
+        # the break-even: only with be_mode "entry", and only where a bar reaches half way to the TP after a
+        # fill (105.66 for P1 alone) - on the fill bar itself in one case, a bar later in the other
+        be_row = {"the TP not on the fill bar": 0, "break-even then its stop": 1}.get(name)
+        if params.be_mode == "entry" and be_row is not None:
+            assert a.be_j == j0 + be_row, name
+            assert a.be_sl == pytest.approx(p1 + m * 0.1, abs=1e-9), name
+        else:
+            assert a.be_j is None and a.be_sl is None, name
+
+
+def test_the_step_function_returns_a_finished_state_unchanged() -> None:
+    plan = zb.plan_setup(_visit_for_steps(1, 4), P)
+    life = zb.SetupLife("cancel", (), plan.sl)
+    b = zb.BarValues(1.0, 0.0, 0.0, 0.0, 0.0)
+    assert zb.step_setup(plan, life, 5, b) is life

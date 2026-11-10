@@ -28,6 +28,9 @@ from app.storage.database import Database
 from app.storage.models import MagicRegistryRow
 
 DEFAULT_BOT = "default"
+# The run-zone runner (eye/ZONE_LIVE.md L1): its own bot block, one strategy slot, reserved once and kept.
+ZONE_BOT = "zone"
+ZONE_STRATEGY = "run_zone"
 SLOTS_PER_BOT = 100
 MAX_BOTS = MAGIC_RANGE // SLOTS_PER_BOT
 
@@ -69,6 +72,10 @@ class MagicRegistry:
                 mine[name] = row
                 next_slot += 1
             return {name: self.magic(mine[name].bot_slot, mine[name].strategy_slot) for name in strategies}
+
+    def zone_magic(self) -> int:
+        """The one magic number reserved for the zone runner (assigned on first use, never changes)."""
+        return self.ensure([ZONE_STRATEGY], bot_id=ZONE_BOT)[ZONE_STRATEGY]
 
     def all(self) -> dict[int, tuple[str, str]]:
         """Every magic ever assigned → (bot_id, strategy)."""

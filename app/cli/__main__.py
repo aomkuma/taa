@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 
 from app.cli.research import add_parser as add_research
+from app.cli.zone import add_parser as add_zone
 from app.config import REPO_ROOT, Settings, load_settings
 from app.core.errors import ConfigError, TaaError
 
@@ -1117,6 +1118,7 @@ def build_parser() -> argparse.ArgumentParser:
     ).set_defaults(func=cmd_engine_new_totp)
 
     add_research(sub, hypotheses=cmd_research_hypotheses, replay_family=cmd_research_replay_family)
+    add_zone(sub)
     return parser
 
 

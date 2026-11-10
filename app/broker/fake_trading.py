@@ -100,6 +100,8 @@ class FakeTradeDesk:
         action = request.get("action")
         if action == c.TRADE_ACTION_REMOVE:
             return self._validate_remove(request)
+        if action == c.TRADE_ACTION_MODIFY:
+            return self._validate_modify(request)
         symbol = str(request.get("symbol", ""))
         sym = fake.symbols.get(symbol)
         quote = self._quote(symbol)
@@ -224,6 +226,27 @@ class FakeTradeDesk:
             return 10029
         return 0
 
+    def _validate_modify(self, request: dict[str, Any]) -> int:
+        """A resting order's expiration changed, the price / SL / TP the same (ZONE_LIVE L3)."""
+        order = self._order(request.get("order"))
+        if order is None:
+            return 10013
+        sym = self.fake.symbols.get(order.symbol)
+        if sym is None or self._quote(order.symbol) is None:
+            return 10013
+        if not self._market_open(sym):
+            return 10018
+        if int(request.get("type_time", c.ORDER_TIME_GTC)) == c.ORDER_TIME_SPECIFIED:
+            expiration = int(request.get("expiration", 0) or 0)
+            if not sym.pending_expiration or expiration <= self._now_server():
+                return 10022
+        same = (
+            float(request.get("price", order.price_open)),
+            float(request.get("sl", order.sl)),
+            float(request.get("tp", order.tp)),
+        ) == (order.price_open, order.sl, order.tp)
+        return 0 if same else 10025
+
     def _order(self, ticket: Any) -> SimpleNamespace | None:
         return next((o for o in self.fake.orders if o.ticket == ticket), None)
 
@@ -262,6 +285,8 @@ class FakeTradeDesk:
         code = self.validate(request)
         if request.get("action") == c.TRADE_ACTION_REMOVE:
             return self._remove(request) if code == 0 else self._result(code, request)
+        if request.get("action") == c.TRADE_ACTION_MODIFY:
+            return self._modify(request) if code == 0 else self._result(code, request)
         if code == 10025 and request.get("action") == c.TRADE_ACTION_SLTP:
             return self._result(10025, request)
         if code != 0:
@@ -307,7 +332,39 @@ class FakeTradeDesk:
         if order is None:
             return self._result(10013, request)
         self.fake.orders.remove(order)
+        self._archive(order, c.ORDER_STATE_CANCELED)
         return self._result(DONE, request, order=order.ticket)
+
+    def _modify(self, request: dict[str, Any]) -> SimpleNamespace:
+        order = self._order(request["order"])
+        if order is None:
+            return self._result(10013, request)
+        timed = int(request.get("type_time", c.ORDER_TIME_GTC)) == c.ORDER_TIME_SPECIFIED
+        order.type_time = int(request.get("type_time", c.ORDER_TIME_GTC))
+        order.time_expiration = int(request.get("expiration", 0) or 0) if timed else 0
+        return self._result(DONE, request, order=order.ticket)
+
+    def _archive(self, order: SimpleNamespace, state: int) -> None:
+        """An order that left the book goes to the history with its final state (history_orders_get)."""
+        self.fake.history_orders.append(
+            SimpleNamespace(
+                ticket=order.ticket,
+                position_id=order.ticket if state == c.ORDER_STATE_FILLED else 0,
+                symbol=order.symbol,
+                type=order.type,
+                state=state,
+                volume_initial=order.volume_initial,
+                volume_current=0.0 if state == c.ORDER_STATE_FILLED else order.volume_current,
+                price_open=order.price_open,
+                sl=order.sl,
+                tp=order.tp,
+                magic=order.magic,
+                comment=order.comment,
+                time_setup=order.time_setup,
+                time_done=self._now_server(),
+                time_expiration=order.time_expiration,
+            )
+        )
 
     def _execute(self, request: dict[str, Any]) -> SimpleNamespace:
         action, symbol = request["action"], str(request["symbol"])
@@ -444,7 +501,9 @@ class FakeTradeDesk:
         positions = self.fake.positions
         equity = self.fake.account.balance + sum(float(getattr(p, "profit", 0.0)) for p in positions)
         if margin > equity - sum(float(getattr(p, "margin", 0.0)) for p in positions):
+            self._archive(order, c.ORDER_STATE_CANCELED)
             return
+        self._archive(order, c.ORDER_STATE_FILLED)
         now = self._now_server()
         positions.append(
             SimpleNamespace(
@@ -486,6 +545,7 @@ class FakeTradeDesk:
         for order in list(self.fake.orders):
             if order.time_expiration and now >= order.time_expiration:
                 self.fake.orders.remove(order)
+                self._archive(order, c.ORDER_STATE_EXPIRED)
                 continue
             quote = self._quote(order.symbol)
             if quote is None:
