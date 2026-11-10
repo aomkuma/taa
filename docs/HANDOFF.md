@@ -98,8 +98,13 @@ trading run. Tests green means the code matches the spec, never "passed".
   `.env` is the investor (read-only) password; the terminal's Algo Trading is also off. **Waiting for the owner**: the
   trading (master) password in `.env` and Algo Trading on in the terminal - then the start again. A keep-awake
   helper (`data/zone_keepawake.ps1`, a minimised window) keeps the PC from sleeping while it runs (AC sleep is 5 h).
-- **Paper beside LIVE (the owner, 2026-11-10)**: every setup also recorded as if taken, whatever the real account's
-  margin or risk allows, to compare with what LIVE could take - its form to be settled with the owner.
+- **Paper beside LIVE (the owner, 2026-11-10)**: `eye/zone_paper.py [--update] [--since "2026-11-10 12:00"]` - the
+  simulation unchanged on the FBS-Real stored bars (cut as the runner starts), every setup visited from `--since` at
+  0.01 lot whatever the real account's margin allows; outputs `eye/research/zone/XAUUSD/paper/`; compared setup by
+  setup with what LIVE took. Checked against the recorded FBS-Real run (October 2026: identical). `--update`
+  fetches the bars read-only with `.env` as it stands - it is refused like the runner until the login can trade
+  (the stored bars end 2026-11-04 17:00 Thai). Read 2026-11-10 12:06 with the `.env` login: account ...169
+  `trade_allowed` False, balance 0.00 USD; `.env` last saved 2026-11-04 18:23.
 - **The work after this release (the owner, 2026-11-10)**: a trade journal page in the system's web app (`app/web`),
   read from the zone runner's store (`zone_live_setup`, `zone_live_request`, `zone_live_visit`): the list of trades,
   the result in R and in money, and a chart of each trade's entries and exits. Through the full process (spec, review,
