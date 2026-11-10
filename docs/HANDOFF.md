@@ -101,10 +101,11 @@ trading run. Tests green means the code matches the spec, never "passed".
 - **Paper beside LIVE (the owner, 2026-11-10)**: `eye/zone_paper.py [--update] [--since "2026-11-10 12:00"]` - the
   simulation unchanged on the FBS-Real stored bars (cut as the runner starts), every setup visited from `--since` at
   0.01 lot whatever the real account's margin allows; outputs `eye/research/zone/XAUUSD/paper/`; compared setup by
-  setup with what LIVE took. Checked against the recorded FBS-Real run (October 2026: identical). `--update`
-  fetches the bars read-only with `.env` as it stands - it is refused like the runner until the login can trade
-  (the stored bars end 2026-11-04 17:00 Thai). Read 2026-11-10 12:06 with the `.env` login: account ...169
-  `trade_allowed` False, balance 0.00 USD; `.env` last saved 2026-11-04 18:23.
+  setup with what LIVE took. Checked against the recorded FBS-Real run (October 2026: identical). `--update` reads
+  the broker's bars through the read-only gateway with the `.env` login, whether or not that login can trade.
+  **Running since 2026-11-10 12:00 Thai** (first run 12:15: bars to 12:00, 0 setups yet); run it again to bring the
+  paper up to date (not scheduled). The LIVE start still waits: read 12:10 with the saved `.env`, account ...169
+  `trade_allowed` False, balance 0.00 USD, Algo Trading off.
 - **The work after this release (the owner, 2026-11-10)**: a trade journal page in the system's web app (`app/web`),
   read from the zone runner's store (`zone_live_setup`, `zone_live_request`, `zone_live_visit`): the list of trades,
   the result in R and in money, and a chart of each trade's entries and exits. Through the full process (spec, review,
