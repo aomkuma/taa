@@ -91,7 +91,15 @@ trading run. Tests green means the code matches the spec, never "passed".
   the forming bar's quotes ends only at that bar's close" (`test_zone_review_fixes3.py`, now checking that rule), and
   the web API samples (the config response carries `zone_live`; regenerated, the frontend tests that read them pass).
   **Committed: 2312b10** (the runner, its CLI, store, migration, tests and harness; not started on any account).
-- **Next**: the owner judges the charts (below) -> LIVE only on the owner's word.
+- **LIVE start (the owner, 2026-11-10 12:00: *"use it for real"* - the runner reads as the simulation, whose charts
+  the owner has seen)**: `zone run --market XAUUSD --set default` started 12:02 and 12:03 in its own window, both
+  refused before any order: *"trading is not allowed for this login (investor password?)"* - the system's client logs
+  in with the `.env` login (FBS-Real, ...169) and the account reports `trade_allowed` False, so `MT5_PASSWORD` in
+  `.env` is the investor (read-only) password; the terminal's Algo Trading is also off. **Waiting for the owner**: the
+  trading (master) password in `.env` and Algo Trading on in the terminal - then the start again. A keep-awake
+  helper (`data/zone_keepawake.ps1`, a minimised window) keeps the PC from sleeping while it runs (AC sleep is 5 h).
+- **Paper beside LIVE (the owner, 2026-11-10)**: every setup also recorded as if taken, whatever the real account's
+  margin or risk allows, to compare with what LIVE could take - its form to be settled with the owner.
 - **The work after this release (the owner, 2026-11-10)**: a trade journal page in the system's web app (`app/web`),
   read from the zone runner's store (`zone_live_setup`, `zone_live_request`, `zone_live_visit`): the list of trades,
   the result in R and in money, and a chart of each trade's entries and exits. Through the full process (spec, review,
