@@ -63,8 +63,12 @@ trading run. Tests green means the code matches the spec, never "passed".
   rule-3 cancellation. **Fixed in the spec** (the history in New York time; the stored H1 misses 17:00 New York on 645
   Monday - Thursday days, the rest holidays; Sol: no other finding); built (trader.py cb70dbf2, the harness's L11 check of
   undecided hours, stale removals and interruptions); Sol's code review 13: no P1.
-- **Next**: the 2026-03 M15 tick replay on trader cb70dbf2 (running), every WARNING line read by hand -> poll -> the
-  full suite once -> commit -> the owner judges the charts (below) -> LIVE only on the owner's word.
+- **2026-03 M15 tick replay on trader cb70dbf2 (2026-11-10 10:46; scratchpad `replay_rel2_m15_tick.txt`): PASS** -
+  46 / 46 visits, 7 / 7 setups matched in every field, no undecided hour, no stale removal, no interruption, 2239 s;
+  one WARNING line, read by hand: a blocked P1 (4464.098) met by the quotes and cancelled - a rule-3 cancellation (L5)
+  that the simulation also makes (the setup matched).
+- **Next**: the 2026-03 M15 poll replay -> the full suite once -> commit -> the owner judges the charts (below) ->
+  LIVE only on the owner's word.
 - **The work after this release (the owner, 2026-11-10)**: a trade journal page in the system's web app (`app/web`),
   read from the zone runner's store (`zone_live_setup`, `zone_live_request`, `zone_live_visit`): the list of trades,
   the result in R and in money, and a chart of each trade's entries and exits. Through the full process (spec, review,
