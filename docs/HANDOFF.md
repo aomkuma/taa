@@ -67,8 +67,9 @@ trading run. Tests green means the code matches the spec, never "passed".
   46 / 46 visits, 7 / 7 setups matched in every field, no undecided hour, no stale removal, no interruption, 2239 s;
   one WARNING line, read by hand: a blocked P1 (4464.098) met by the quotes and cancelled - a rule-3 cancellation (L5)
   that the simulation also makes (the setup matched).
-- **Next**: the 2026-03 M15 poll replay -> the full suite once -> commit -> the owner judges the charts (below) ->
-  LIVE only on the owner's word.
+- **2026-03 M15 poll replay on trader cb70dbf2 (2026-11-10 11:17; scratchpad `replay_rel2_m15_poll.txt`): PASS** -
+  46 / 46 visits, 7 / 7 setups matched in every field, 1834 s; the same one WARNING line (the rule-3 cancellation).
+- **Next**: the full suite once -> commit -> the owner judges the charts (below) -> LIVE only on the owner's word.
 - **The work after this release (the owner, 2026-11-10)**: a trade journal page in the system's web app (`app/web`),
   read from the zone runner's store (`zone_live_setup`, `zone_live_request`, `zone_live_visit`): the list of trades,
   the result in R and in money, and a chart of each trade's entries and exits. Through the full process (spec, review,
