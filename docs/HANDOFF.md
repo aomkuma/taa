@@ -49,6 +49,24 @@ trading run. Tests green means the code matches the spec, never "passed".
   - the replay double (Sol's code review 13, P2): a cycle just past the stale deadline can still be skipped
     (`tests/zone_replay.py:825`), and an hour left undecided during a multi-hour catch-up escapes `undecided_hours`
     (`:771`) - the runner logs both at WARNING, so every WARNING line of a replay is read by hand until they are fixed.
+- **Spec points to settle after the release** (Claude's reading of `eye/ZONE_LIVE.md` whole, 2026-11-10; none
+  severe; each goes through the spec and Sol):
+  - L1 says the two `.env` values are "set by the owner, never by code or by Claude", but they were set by Claude on
+    the owner's word (below) - the line should read "only on the owner's word";
+  - L3 does not say the expiry extension is sent only while placing is allowed (the code: `trader.py:3177`,
+    `ctx.can_place`); the set's `order_life_h` is 48, so an hour's setup rests through the daily break and the weekend,
+    where its order expires at the broker (the H1 close + 1 minute, not extended in a closed market) and is placed
+    again at the reopening - at market when the reopening gapped through it (L3);
+  - the spec assumes the symbol's stops level and freeze level are 0 and never says so (stored `spec.json` of
+    FBS-Real XAUUSD, 2026-11-04: both 0); a broker that raises them refuses a BE modify near the price (3 tries =
+    6 s -> hands-off) or a removal - a start check, or a rule;
+  - nothing tells the owner the runner has died (L12: no alerts): its orders expire within about an hour, its
+    positions keep the broker SL / TP without the break-even, and `zone status` (L10) does not show the last cycle's
+    time; the PC clock against the server clock is not checked at start (a skew over `stale_quote_seconds` makes
+    every quote stale: nothing placed, silently);
+  - the fixed 60 s (the decision window, the stop's wait) are not named as fixed beside L9's settings; L2 lines
+    159 - 161 carry a doubled "(L4)".
+  - The first holiday closure after a start (the known defect above) is US Thanksgiving, 2026-11-26.
 - **2026-03 M15 tick replay on the release code (2026-11-09 21:25; scratchpad `replay_rel1_m15_tick.txt`): the
   gate says PASS - 46 / 46 visits, 7 / 7 setups matched in every field, 2774 s - but 14 WARNING lines, where the last
   PASS (before review 5's fixes) had none**: 10 hours undecided at the daily reopening (22:00 UTC on 03-16 .. 03-31,
