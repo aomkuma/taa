@@ -8,8 +8,8 @@ stored bars (``data/history/FBS-Real/XAUUSD``), cut at the last closed bar, from
 
     python eye/zone_paper.py [--update] [--since "2026-11-10 12:00"] [--no-charts]
 
-``--update`` first brings the stored bars up to date from the broker (read-only,
-``scripts/download_history.py``; the broker's closed bars merged by open time). Outputs in
+``--update`` first brings the stored bars up to date from the broker (a read of bars only; the broker's
+closed bars merged by open time). Outputs in
 ``eye/research/zone/XAUUSD/paper/``: ``positions.csv``, ``visits.csv``, ``summary.csv`` of the paper setups,
 and a chart per traded one.
 """
@@ -18,7 +18,6 @@ from __future__ import annotations
 
 import argparse
 import dataclasses
-import subprocess  # nosec B404 - runs this repository's own downloader
 import sys
 from pathlib import Path
 
@@ -38,19 +37,44 @@ EPOCH = "2023-10-01"
 
 
 def update_bars(market: str) -> None:
-    cmd = [
-        sys.executable,
-        str(ROOT / "scripts" / "download_history.py"),
-        "--symbols",
-        market,
-        "--timeframes",
-        "D1,H4,H1,M15",
-        "--days",
-        "30",
-    ]
-    # read-only (the downloader sends no order); it connects with .env as it stands, so in LIVE mode it needs
-    # the account's trading password and Algo Trading on, as the runner does
-    subprocess.run(cmd, cwd=ROOT, check=True)  # noqa: S603  # nosec B603 - fixed arguments
+    """The broker's closed bars of the last 30 days merged into the stored files - a read of bars only. The
+    terminal is attached with the ``.env`` login and no order function is reachable (the read-only gateway);
+    the account's right to trade is not asked for, so a login that cannot trade can still feed the paper."""
+    from datetime import timedelta
+
+    from app.broker.factory import build_read_only
+    from app.config import load_settings
+    from app.core.enums import Timeframe
+    from app.market_data.history_download import download_history
+    from app.market_data.history_store import ParquetHistoryStore
+
+    settings = load_settings()
+    env = settings.env
+    bundle = build_read_only(settings)
+    client = bundle.client
+    if env.MT5_LOGIN is None or env.MT5_PASSWORD is None:
+        raise ZoneError("MT5_LOGIN and MT5_PASSWORD are required to read the bars")
+    ok = client.mt5.initialize(
+        login=env.MT5_LOGIN, password=env.MT5_PASSWORD.get_secret_value(), server=env.MT5_SERVER
+    )
+    if not ok:
+        raise ZoneError(f"the terminal refused the login: {client.mt5.last_error()}")
+    try:
+        account = client.mt5.account_info()
+        if account is None or account.server != SERVER:
+            raise ZoneError(f"the terminal is not on {SERVER}")
+        client.connected = True
+        store = ParquetHistoryStore(settings.path("data/history"))
+        end = client.clock.now_utc()
+        spec = bundle.gateway.symbol_spec(market)
+        for name in ("D1", "H4", "H1", "M15"):
+            tf = Timeframe(name)
+            df = download_history(bundle.gateway, market, tf, end - timedelta(days=30), end)
+            total = store.save(SERVER, market, tf, df, spec)
+            print(f"{market} {name}: {len(df)} bars read, {total} stored")
+    finally:
+        client.connected = False
+        client.mt5.shutdown()
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -87,7 +111,7 @@ def main(argv: list[str] | None = None) -> int:
         out_dir = Path(a.out) if a.out else ROOT / "eye" / "research" / "zone" / a.market / "paper"
         stats = write_outputs(out_dir, zone, params, since, end, res)
         n_charts = 0 if a.no_charts else len(write_charts(out_dir, res, bars, params))
-    except (ConfigError, ZoneError, subprocess.CalledProcessError) as e:
+    except (ConfigError, ZoneError) as e:
         print(f"zone_paper: {e}", file=sys.stderr)
         return 1
     print(
