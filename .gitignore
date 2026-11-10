@@ -63,3 +63,22 @@ eye/research/**/*.png
 eye/trades/**/*.png
 eye/walk/**/*.png
 eye/wip/**/*.png
+# research folders hold code and notes only in git; data and drawings stay on this machine
+research/**/*.parquet
+research/**/*.npy
+research/**/*.npz
+research/**/*.pkl
+research/**/*.zip
+research/**/*.png
+research/**/*.svg
+research/**/*.html
+research/**/*.csv
+research/**/*.json
+research/**/*.log
+research/**/*.err
+eye/research/**/*.csv
+eye/research/**/*.json
+eye/wip/**/*.csv
+eye/wip/**/*.json
+eye/wip/**/*.log
+eye/wip/**/*.diff
